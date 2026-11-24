@@ -1,0 +1,6 @@
+import { LitElement, html, css, nothing } from "lit";
+import "../uic-icon/uic-icon";
+import type { IconName } from "../uic-icon/uic-icon";
+export class UicIconButton extends LitElement { static override properties={icon:{type:String},label:{type:String},disabled:{type:Boolean,reflect:true},expanded:{type:String}}; static override styles=css`button{width:var(--control-height);height:var(--control-height);display:grid;place-items:center;border:var(--border-width) solid transparent;border-radius:var(--radius-md);background:transparent;color:var(--text-primary);cursor:pointer}button:hover{background:var(--bg-hover)}button:focus-visible{outline:var(--focus-width) solid var(--focus-ring);outline-offset:2px}button:disabled{opacity:.5;cursor:not-allowed}`; declare icon:IconName; declare label:string; declare disabled:boolean; declare expanded:boolean | string | undefined; protected override render(){return html`<button type="button" ?disabled=${this.disabled} aria-label=${this.label} aria-expanded=${this.expanded === undefined ? nothing : String(this.expanded)}><uic-icon .name=${this.icon}></uic-icon></button>`;} }
+if(typeof customElements!=="undefined"&&!customElements.get("uic-icon-button"))customElements.define("uic-icon-button",UicIconButton);
+declare global{interface HTMLElementTagNameMap{"uic-icon-button":UicIconButton}}

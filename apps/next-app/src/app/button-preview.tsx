@@ -1,60 +1,6 @@
 "use client";
-
+/* eslint-disable @typescript-eslint/no-namespace */
 import { useEffect, useState } from "react";
 import type { DetailedHTMLProps, HTMLAttributes } from "react";
-
-declare module "react" {
-  namespace JSX {
-    interface IntrinsicElements {
-      "uic-button": DetailedHTMLProps<
-        HTMLAttributes<HTMLElement>,
-        HTMLElement
-      > & {
-        variant?: "primary" | "secondary";
-        disabled?: boolean;
-      };
-    }
-  }
-}
-
-export default function ButtonPreview() {
-  const [ready, setReady] = useState(false);
-  const [clickCount, setClickCount] = useState(0);
-  const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    import("@nx-learning/shared-ui")
-      .then(() => customElements.whenDefined("uic-button"))
-      .then(() => setReady(true))
-      .catch(() => setFailed(true));
-  }, []);
-
-  if (failed) {
-    return <p>Unable to load shared UI.</p>;
-  }
-
-  if (!ready) {
-    return <p>Loading shared UI...</p>;
-  }
-
-  return (
-    <>
-      <div className="actions">
-        <uic-button
-          variant="primary"
-          onClick={() => setClickCount((count) => count + 1)}
-        >
-          + New Project
-        </uic-button>
-
-        <uic-button variant="secondary" onClick={() => setClickCount(0)}>
-          Reset
-        </uic-button>
-
-        <uic-button disabled>Disabled</uic-button>
-      </div>
-
-      <p>Button clicks: {clickCount}</p>
-    </>
-  );
-}
+declare module "react" { namespace JSX { interface IntrinsicElements { "uic-button": DetailedHTMLProps<HTMLAttributes<HTMLElement>,HTMLElement>&{variant?:"primary"|"secondary";disabled?:boolean}; "uic-icon": DetailedHTMLProps<HTMLAttributes<HTMLElement>,HTMLElement>&{name?:string;size?:"sm"|"md"}; "uic-icon-button": DetailedHTMLProps<HTMLAttributes<HTMLElement>,HTMLElement>&{icon?:string;label?:string}; "uic-card": DetailedHTMLProps<HTMLAttributes<HTMLElement>,HTMLElement>; "uic-input": DetailedHTMLProps<HTMLAttributes<HTMLElement>,HTMLElement>&{label?:string;placeholder?:string}; "uic-textarea": DetailedHTMLProps<HTMLAttributes<HTMLElement>,HTMLElement>&{label?:string;placeholder?:string}; "uic-tabs": DetailedHTMLProps<HTMLAttributes<HTMLElement>,HTMLElement>&{items?:unknown;value?:string;panels?:boolean}; "uic-modal": DetailedHTMLProps<HTMLAttributes<HTMLElement>,HTMLElement>&{heading?:string;open?:boolean}; "uic-nav": DetailedHTMLProps<HTMLAttributes<HTMLElement>,HTMLElement>; "uic-avatar": DetailedHTMLProps<HTMLAttributes<HTMLElement>,HTMLElement>&{label?:string}; "uic-empty-state": DetailedHTMLProps<HTMLAttributes<HTMLElement>,HTMLElement>&{heading?:string;description?:string}; "uic-scroll-area": DetailedHTMLProps<HTMLAttributes<HTMLElement>,HTMLElement>; "uic-list-item": DetailedHTMLProps<HTMLAttributes<HTMLElement>,HTMLElement>&{label?:string;selected?:boolean}; } } }
+export default function ButtonPreview(){const [ready,setReady]=useState(false);const [count,setCount]=useState(0);const [tab,setTab]=useState("overview");const [open,setOpen]=useState(false);useEffect(()=>{import("@nx-learning/shared-ui").then(()=>customElements.whenDefined("uic-button")).then(()=>setReady(true));},[]);if(!ready)return <p>Loading shared UI...</p>;return <><uic-nav><span slot="left"><uic-icon name="sparkles"/> Design System</span><uic-avatar slot="right" label="User"/></uic-nav><main><uic-card><h1>Shared UI primitives</h1><p>Next.js uses the same Lit components as Angular.</p><div className="actions"><uic-button variant="primary" onClick={()=>setCount(count+1)}><uic-icon name="plus" size="sm"/> New Project</uic-button><uic-button variant="secondary" onClick={()=>setCount(0)}>Reset</uic-button><uic-button disabled>Disabled</uic-button><uic-icon-button icon="menu" label="Menu"/></div><p>Button clicks: {count}</p></uic-card><uic-tabs panels items={[{id:"overview",label:"Overview"},{id:"details",label:"Details"}]} value={tab} onUic-change={(e:any)=>setTab(e.detail.value)}><p slot="panel-overview">Overview panel</p><p slot="panel-details">Details panel</p></uic-tabs><uic-input label="Project name" placeholder="Untitled"/><uic-textarea label="Notes" placeholder="Write notes"/><div className="actions"><uic-button onClick={()=>setOpen(true)}>Open dialog</uic-button><uic-empty-state heading="Nothing here yet" description="Add a component to get started."><uic-button slot="action">Add component</uic-button></uic-empty-state></div><uic-scroll-area tabIndex={0}><uic-list-item label="Design System" selected/><uic-list-item label="A second item"/><uic-list-item label="A third item"/></uic-scroll-area></main><uic-modal heading="Preview dialog" open={open} onUic-close={()=>setOpen(false)}><p slot="description">A reusable dialog pattern.</p><p>Native dialog with Escape support.</p><uic-button slot="footer" variant="secondary" onClick={()=>setOpen(false)}>Done</uic-button></uic-modal></>}

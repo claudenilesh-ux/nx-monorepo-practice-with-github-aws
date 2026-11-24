@@ -19,4 +19,7 @@ export class App {
   resetCount(): void {
     this.clickCount = 0;
   }
+
+  tab = "overview";
+  modalOpen = false;
 }

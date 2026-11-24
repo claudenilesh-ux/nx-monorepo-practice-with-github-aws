@@ -4,6 +4,7 @@ export const uicButtonStyles = css`
   :host {
     display: inline-block;
   }
+  :host([full-width]), :host([full-width]) button { width: 100%; }
 
   button {
     box-sizing: border-box;
