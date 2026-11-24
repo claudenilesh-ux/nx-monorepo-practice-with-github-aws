@@ -4,7 +4,7 @@
 
 ✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
 
 ## Run tasks
 
@@ -29,6 +29,7 @@ These targets are either [inferred automatically](https://nx.dev/concepts/inferr
 While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
 
 To install a new plugin you can use the `nx add` command. Here's an example of adding the React plugin:
+
 ```sh
 npx nx add @nx/react
 ```
@@ -84,13 +85,90 @@ Nx Console is an editor extension that enriches your developer experience. It le
 
 Learn more:
 
-- [Learn more about this workspace setup](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
+- [Learn more about this workspace setup](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 - [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 - [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 - [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 
 And join the Nx community:
+
 - [Discord](https://go.nx.dev/community)
 - [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
 - [Our Youtube channel](https://www.youtube.com/@nxdevtools)
 - [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+
+//Add express app
+npx nx add @nx/express
+npx nx g @nx/express:application apps/express-api \
+ --name=express-api \
+ --linter=eslint \
+ --unitTestRunner=jest \
+ --js=false
+
+//add angular app
+npx nx add @nx/angular
+npx nx g @nx/angular:application --help
+npx nx g @nx/angular:application apps/angular-app \
+ --name=angular-app \
+ --standalone=true \
+ --routing=true \
+ --style=css \
+ --ssr=false \
+ --e2eTestRunner=none \
+ --unitTestRunner=jest \
+ --bundler=esbuild \
+ --linter=eslint \
+ --port=4200
+
+//Add next app
+npx nx add @nx/next
+npx nx g @nx/next:application apps/next-app \
+ --name=next-app \
+ --appDir=true \
+ --src=true \
+ --style=scss \
+ --linter=eslint \
+ --unitTestRunner=jest \
+ --e2eTestRunner=none \
+ --js=false
+
+To add libs
+npx nx add @nx/js
+npx nx g @nx/js:library libs/design-tokens \
+ --name=design-tokens \
+ --bundler=none \
+ --unitTestRunner=none \
+ --linter=none \
+ --useProjectJson=true
+
+To run apps
+run npx nx dev next-app
+npx nx serve angular-app
+
+To build all
+npx nx run-many -t build --projects=angular-app,next-app
+
+# Build application
+
+npx nx build angular-app
+
+create design-tokens manually
+mkdir -p libs/design-tokens/src
+touch libs/design-tokens/src/{\_colors,\_typography,\_spacing,\_radius,\_breakpoints,\_mixins,\_reset,global}.scss
+
+1. Shared UI vs Shared Sections
+   Shared UI (UIC) vs Shared Sections (SIC)
+   Small reusable components vs Combination of multiple UICs
+   uic-button vs sic-sidebar
+   uic-input vs sic-login-form
+   uic-avatar vs sic-user-profile
+   uic-card vs sic-product-grid
+   uic-modal vs sic-project-editor
+   Generic functionality vs Section-specific functionality
+
+add inside both apps angual and nextjs @app/@project.json
+"implicitDependencies": ["design-tokens"]
+If Next.js does not have a project.json but has its own package.json, add this inside its nx object instead:
+"nx": {
+"implicitDependencies": ["design-tokens"]
+}

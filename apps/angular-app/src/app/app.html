@@ -1,0 +1,11 @@
+<div class="actions">
+  <uic-button variant="primary" (click)="incrementCount()">
+    + New Project
+  </uic-button>
+
+  <uic-button variant="secondary" (click)="resetCount()"> Reset </uic-button>
+
+  <uic-button [disabled]="true"> Disabled </uic-button>
+</div>
+
+<p>Button clicks: {{ clickCount }}</p>

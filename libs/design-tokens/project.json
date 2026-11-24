@@ -1,0 +1,7 @@
+{
+  "name": "design-tokens",
+  "projectType": "library",
+  "sourceRoot": "libs/design-tokens/src",
+  "tags": ["type:design-tokens"],
+  "targets": {}
+}

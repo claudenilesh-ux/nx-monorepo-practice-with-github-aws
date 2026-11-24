@@ -1,0 +1,124 @@
+.token-preview {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--space-6);
+  font-family: var(--font-sans);
+
+  h1 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+  }
+
+  h2 {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  p {
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .preview-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    margin-top: var(--space-5);
+  }
+
+  .color-palette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-block: var(--space-4);
+  }
+
+  .swatch {
+    flex: 1 1 100px;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-default);
+    font-size: var(--font-size-sm);
+  }
+
+  .base {
+    background: var(--bg-base);
+  }
+
+  .surface {
+    background: var(--bg-surface);
+  }
+
+  .primary {
+    background: var(--accent-primary);
+    color: var(--text-on-accent);
+  }
+
+  .success {
+    background: var(--state-success);
+    color: var(--text-on-accent);
+  }
+
+  .error {
+    background: var(--state-error);
+    color: var(--text-on-accent);
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--border-default);
+    margin-block: var(--space-5);
+  }
+
+  input {
+    width: 100%;
+    padding: var(--space-3);
+    background: var(--bg-base);
+    color: var(--text-primary);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+
+    &::placeholder {
+      color: var(--text-muted);
+    }
+
+    &:focus {
+      outline: 2px solid var(--accent-primary);
+    }
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
+
+  button {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+  }
+
+  .primary-btn {
+    background: var(--accent-primary);
+    color: var(--text-on-accent);
+    border: 0;
+  }
+
+  .secondary-btn {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-default);
+
+    &:hover {
+      background: var(--bg-hover);
+    }
+  }
+}
