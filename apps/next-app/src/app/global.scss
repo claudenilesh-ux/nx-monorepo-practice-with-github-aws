@@ -1,1 +1,5 @@
 @use "../../../../libs/design-tokens/src/global";
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-3)}
+main{display:grid;gap:var(--space-5);max-width:960px;margin:var(--space-6) auto;padding:0 var(--space-4)}
+h1{font-size:var(--font-size-xl)}
+uic-scroll-area{display:block;max-height:140px;border:var(--border-width) solid var(--border-default);border-radius:var(--radius-md);padding:var(--space-2)}

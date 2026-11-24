@@ -7,6 +7,7 @@ export class UicButton extends LitElement {
   static override properties = {
     variant: { type: String, reflect: true },
     disabled: { type: Boolean, reflect: true },
+    fullWidth: { type: Boolean, reflect: true, attribute: 'full-width' },
   };
 
   static override styles = uicButtonStyles;
@@ -34,7 +35,7 @@ export class UicButton extends LitElement {
   }
 }
 
-if (!customElements.get("uic-button")) {
+if (typeof customElements !== "undefined" && !customElements.get("uic-button")) {
   customElements.define("uic-button", UicButton);
 }
 

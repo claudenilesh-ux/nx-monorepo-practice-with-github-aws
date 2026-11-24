@@ -1,11 +1,8 @@
-<div class="actions">
-  <uic-button variant="primary" (click)="incrementCount()">
-    + New Project
-  </uic-button>
-
-  <uic-button variant="secondary" (click)="resetCount()"> Reset </uic-button>
-
-  <uic-button [disabled]="true"> Disabled </uic-button>
-</div>
-
-<p>Button clicks: {{ clickCount }}</p>
+<uic-nav><span slot="left"><uic-icon name="sparkles"></uic-icon> Design System</span><uic-avatar slot="right" label="User"></uic-avatar></uic-nav>
+<main>
+  <uic-card><h1>Shared UI primitives</h1><p>Angular uses the same Lit components as Next.js.</p><div class="actions"><uic-button variant="primary" (click)="incrementCount()"><uic-icon name="plus" size="sm"></uic-icon> New Project</uic-button><uic-button variant="secondary" (click)="resetCount()">Reset</uic-button><uic-button [disabled]="true">Disabled</uic-button><uic-icon-button icon="menu" label="Menu"></uic-icon-button></div><p>Button clicks: {{ clickCount }}</p></uic-card>
+  <uic-tabs panels [items]="[{id:'overview',label:'Overview'},{id:'details',label:'Details'}]" [value]="tab" (uic-change)="tab = $any($event).detail.value"><p slot="panel-overview">Overview panel</p><p slot="panel-details">Details panel</p></uic-tabs>
+  <uic-input label="Project name" placeholder="Untitled" value="Design System"></uic-input><uic-textarea label="Notes" placeholder="Write notes"></uic-textarea>
+  <div class="actions"><uic-button (click)="modalOpen=true">Open dialog</uic-button><uic-empty-state heading="Nothing here yet" description="Add a component to get started."><uic-button slot="action">Add component</uic-button></uic-empty-state></div>
+  <uic-scroll-area tabindex="0"><uic-list-item label="Design System" [selected]="true"></uic-list-item><uic-list-item label="A second item"></uic-list-item><uic-list-item label="A third item"></uic-list-item></uic-scroll-area>
+</main><uic-modal heading="Preview dialog" [open]="modalOpen" (uic-close)="modalOpen=false"><p slot="description">A reusable dialog pattern.</p><p>Native dialog with Escape support.</p><uic-button slot="footer" variant="secondary" (click)="modalOpen=false">Done</uic-button></uic-modal>

@@ -25,4 +25,5 @@ Follow ui-context.md. Theme values only in tokens.css; import global.css at app 
 Use public entry points. Respect actual Nx generated conventions, document approved deviations and avoid unnecessary empty folders.
 
 ## Tests and verification
+The shared-ui Jest target supports Lit ESM using its own configuration; retain strict TypeScript checks and existing tests.
 Use installed compatible test tooling. Add focused tests for component properties/events, API validation, service CRUD and error paths. Browser verification must cover both frontends when shared UI changes; inspect console, network, DOM, screenshots and accessibility basics. Keep tests local and deterministic. Use actual Nx project names and available targets from `nx show projects` and `nx show project <name>`; never claim a command passed unless it was run successfully.
