@@ -18,12 +18,12 @@
     {
       "id": 2,
       "prompt": "im building a rest api with express and typescript, no frontend. i need to protect some routes with authentication. can you add clerk? i want /api/public to be open and everything under /api/private/* to require auth",
-      "expected_output": "Installs @clerk/express, adds clerkMiddleware globally, uses requireAuth for protected routes, keeps public routes open",
+      "expected_output": "Installs @clerk/express, adds clerkMiddleware globally, uses getAuth and returns 401 for unauthenticated private routes, keeps public routes open",
       "files": [],
       "expectations": [
         "Installs @clerk/express (not @clerk/nextjs)",
         "Adds clerkMiddleware() to the Express app",
-        "Shows how to protect /api/private/* routes with requireAuth or getAuth check",
+        "Protects /api/private/* routes with getAuth() and returns an explicit 401 for unauthenticated requests",
         "Leaves /api/public accessible without auth",
         "Does NOT create React components, ClerkProvider, or any frontend code",
         "Sets up CLERK_SECRET_KEY (and optionally CLERK_PUBLISHABLE_KEY) env vars"
@@ -54,7 +54,7 @@
         "Does NOT create middleware.ts or proxy.ts (not applicable to SPAs)",
         "Does NOT reference Next.js-specific patterns like server components or auth()",
         "Shows SignIn/SignUp components or redirect-based auth flow",
-        "Sets up NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY or VITE_CLERK_PUBLISHABLE_KEY env var"
+        "Uses VITE_CLERK_PUBLISHABLE_KEY; accepts NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY only if Vite is explicitly configured to expose and read it"
       ]
     },
     {

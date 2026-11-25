@@ -17,11 +17,12 @@ export const config = {
   matcher: [
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
     '/(api|trpc)(.*)',
+    '/dashboard/:path*', // Include protected dashboard routes with file-like suffixes.
   ],
 }
 ```
 
-Keep the `config.matcher` block. Without the `'/(api|trpc)(.*)'` entry, `auth()` has no session on API routes.
+Include additional protected route prefixes that can contain file-like suffixes in the matcher, as shown for `/dashboard`. Keep the `config.matcher` block. Without the `'/(api|trpc)(.*)'` entry, `auth()` has no session on API routes.
 
 ## Protect Each Resource
 

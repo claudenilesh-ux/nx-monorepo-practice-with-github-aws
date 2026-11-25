@@ -81,7 +81,7 @@ Inspect its Clerk package versions before changing anything and use the version 
 
 Follow this branch when the user asks to use an existing Clerk application or an existing Clerk project needs its keys restored. If they supplied an application ID, keep it for `init` or `link` as appropriate. Otherwise, if the Clerk MCP server is connected, list the applications with its `list_applications` tool.
 
-Signing in to the MCP server doesn't sign in the CLI, which still writes the keys. Have the user authenticate the CLI from their host terminal:
+Signing in to the MCP server doesn't sign in the CLI, which still writes the keys. Before login, check whether an init claim file exists without reading its contents. If it exists and the user intends to use a different application, have them sign in from another directory first; a login here can claim the init application. Otherwise, have the user authenticate the CLI from their host terminal:
 
 ```bash
 npx -y clerk@latest auth login
@@ -99,7 +99,7 @@ Show the names and IDs and ask which application to use. Never choose an applica
 npx -y clerk@latest link --app <application_id>
 ```
 
-For missing development keys, pull them:
+Before pulling missing development keys, check whether any Clerk keys already exist without exposing their values. `env pull` can overwrite existing keys even when only one key is missing; obtain the user's confirmation before running it whenever existing keys could be overwritten. Then pull them:
 
 ```bash
 npx -y clerk@latest env pull

@@ -66,23 +66,28 @@ export default function Editor() {
   const submit = (event: CustomEvent<{ name: string; slug: string }>) => {
     if (!dialog || !store || store.userId !== userId || submitting.current) return;
     submitting.current = true;
-    let next = projects;
-    let nextSelected = selectedId;
-    if (dialog.mode === "delete" && dialog.project) {
-      next = projects.filter(project => project.id !== dialog.project?.id);
-      if (selectedId === dialog.project.id) nextSelected = null;
-    } else {
-      const valid = validateProjectName(event.detail.name, projects, dialog.project?.id);
-      if (valid.error !== undefined || valid.slug !== event.detail.slug) { submitting.current = false; return; }
-      if (dialog.mode === "create") {
-        const project = { id: crypto.randomUUID(), name: valid.name, slug: valid.slug };
-        next = [...projects, project]; nextSelected = project.id;
-      } else if (dialog.project && dialog.project.name !== valid.name) {
-        next = projects.map(project => project.id === dialog.project?.id ? { ...project, name: valid.name, slug: valid.slug } : project);
-      }
-    }
     try {
-      if (next !== projects) writeProjects(window.localStorage, store.userId, next);
+      const current = readProjects(window.localStorage, store.userId);
+      let next = current;
+      let nextSelected = selectedId;
+      if (dialog.mode === "delete" && dialog.project) {
+        next = current.filter(project => project.id !== dialog.project?.id);
+        if (selectedId === dialog.project.id) nextSelected = null;
+      } else {
+        const valid = validateProjectName(event.detail.name, current, dialog.project?.id);
+        if (valid.error !== undefined || valid.slug !== event.detail.slug) {
+          setStore({ userId: store.userId, projects: current });
+          submitting.current = false;
+          return;
+        }
+        if (dialog.mode === "create") {
+          const project = { id: crypto.randomUUID(), name: valid.name, slug: valid.slug };
+          next = [...current, project]; nextSelected = project.id;
+        } else if (dialog.project) {
+          next = current.map(project => project.id === dialog.project?.id ? { ...project, name: valid.name, slug: valid.slug } : project);
+        }
+      }
+      if (next !== current) writeProjects(window.localStorage, store.userId, next);
       if (dialog.mode === "delete") {
         const nativeDialog = projectDialog.current?.shadowRoot?.querySelector("uic-modal")?.shadowRoot?.querySelector("dialog");
         nativeDialog?.addEventListener("close", () => {

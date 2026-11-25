@@ -88,3 +88,38 @@ it.each([1, 2])('focuses a surviving project control after deleting from %i proj
   expect(count > 1 ? rowRoot.activeElement : createRoot.activeElement).toBe(count > 1 ? rowButton : createButton);
   if (count > 1) expect(container.querySelector('main h1')?.textContent).toBe('Second');
 });
+
+it('preserves projects written by another tab before submitting', async () => {
+  mockUserId = 'concurrent-user';
+  localStorage.clear();
+  const key = 'nx-learning:projects:v1:concurrent-user';
+  const { container } = render(<Editor />);
+  await waitFor(() => expect(container.querySelector('sic-sidebar')).not.toBeNull());
+  const sidebar = container.querySelector('sic-sidebar');
+  const dialog = container.querySelector('sic-project-dialog');
+  if (!sidebar || !dialog) throw new Error('Editor components missing');
+  act(() => sidebar.dispatchEvent(new CustomEvent('project-create')));
+  localStorage.setItem(key, JSON.stringify([{ id: 'other', name: 'Other', slug: 'other' }]));
+  act(() => dialog.dispatchEvent(new CustomEvent('project-submit', { detail: { name: 'New', slug: 'new' } })));
+  expect(JSON.parse(localStorage.getItem(key) ?? 'null')).toEqual([
+    { id: 'other', name: 'Other', slug: 'other' },
+    expect.objectContaining({ name: 'New', slug: 'new' }),
+  ]);
+});
+
+it('rejects a slug added by another tab while the dialog is open', async () => {
+  mockUserId = 'collision-user';
+  localStorage.clear();
+  const key = 'nx-learning:projects:v1:collision-user';
+  const { container } = render(<Editor />);
+  await waitFor(() => expect(container.querySelector('sic-sidebar')).not.toBeNull());
+  const sidebar = container.querySelector('sic-sidebar');
+  const dialog = container.querySelector('sic-project-dialog');
+  if (!sidebar || !dialog) throw new Error('Editor components missing');
+  act(() => sidebar.dispatchEvent(new CustomEvent('project-create')));
+  const other = [{ id: 'other', name: 'New', slug: 'new' }];
+  localStorage.setItem(key, JSON.stringify(other));
+  act(() => dialog.dispatchEvent(new CustomEvent('project-submit', { detail: { name: 'New', slug: 'new' } })));
+  expect(JSON.parse(localStorage.getItem(key) ?? 'null')).toEqual(other);
+  expect((sidebar as HTMLElement & { projects: unknown[] }).projects).toEqual(other);
+});

@@ -15,7 +15,7 @@ metadata:
 
 For basic setup, see `clerk-setup` skill.
 
-> **Route protection:** call `await auth.protect()` in each page, Route Handler, and Server Function. Keep `clerkMiddleware()` bare. `createRouteMatcher` is deprecated in `@clerk/nextjs` 7 and will be removed in the next major version. Don't add it. If a project already uses it, leave it working and point the user to the [migration guide](https://clerk.com/docs/guides/development/upgrading/upgrade-guides/migrate-from-create-route-matcher).
+> **Route protection:** call `await auth.protect()` in each protected page, Route Handler, and Server Function; keep public pages such as sign-in accessible. For API endpoints requiring explicit 401 or 403 responses, use `await auth()` and return those responses: unauthenticated session-token Route Handler requests can otherwise return 404. Keep `clerkMiddleware()` bare. `createRouteMatcher` is deprecated in `@clerk/nextjs` 7 and will be removed in the next major version. Don't add it. If a project already uses it, leave it working and point the user to the [migration guide](https://clerk.com/docs/guides/development/upgrading/upgrade-guides/migrate-from-create-route-matcher).
 
 ## What Do You Need?
 
@@ -125,6 +125,8 @@ export function AuthenticatedDashboard() {
   <AdminPanel />
 </Show>
 ```
+
+> **Security:** `<Show>` only controls rendering. Enforce the required role or permission on the server before fetching or returning sensitive data.
 
 **Callback for complex logic:**
 
@@ -236,12 +238,14 @@ export function SessionInfo() {
 
 For standalone API servers that receive Clerk session tokens from the `Authorization` header or the `__session` cookie (same-origin).
 
+The examples below assume Express with cookie-parsing middleware (such as `cookie-parser`) installed before the handler, so `req.cookies` is available. Validate the expected authorized party (`azp`) for browser sessions as described in [manual JWT verification](https://clerk.com/docs/guides/sessions/manual-jwt-verification).
+
 **Using `@clerk/backend` `verifyToken`** (recommended):
 
 ```typescript
 import { verifyToken } from '@clerk/backend'
 
-const token = req.headers.authorization?.replace('Bearer ', '')
+const token = req.headers.authorization?.match(/^Bearer\s+(.+)$/i)?.[1] ?? req.cookies?.__session
 if (!token) return res.status(401).json({ error: 'No token' })
 
 try {
@@ -260,7 +264,7 @@ try {
 import jwt from 'jsonwebtoken'
 
 const publicKey = process.env.CLERK_PEM_PUBLIC_KEY!.replace(/\\n/g, '\n')
-const token = req.headers.authorization?.replace('Bearer ', '')
+const token = req.headers.authorization?.match(/^Bearer\s+(.+)$/i)?.[1] ?? req.cookies?.__session
 if (!token) return res.status(401).json({ error: 'No token' })
 
 try {
