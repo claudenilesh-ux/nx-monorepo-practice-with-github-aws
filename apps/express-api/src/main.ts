@@ -5,6 +5,7 @@
 
 import express from "express";
 import * as path from "path";
+import { disconnectPrisma } from "./app/database/prisma";
 
 const app = express();
 
@@ -43,3 +44,20 @@ server.on("error", (error) => {
     process.exit(1);
   }
 });
+
+let shuttingDown = false;
+for (const signal of ["SIGINT", "SIGTERM"] as const) {
+  process.on(signal, () => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    server.close(async () => {
+      try {
+        await disconnectPrisma();
+        process.exitCode = 0;
+      } catch {
+        console.error("Database shutdown failed");
+        process.exitCode = 1;
+      }
+    });
+  });
+}

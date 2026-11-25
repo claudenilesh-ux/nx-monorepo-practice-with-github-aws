@@ -5,6 +5,28 @@
   "projectType": "application",
   "tags": [],
   "// targets": "to see all targets run: nx show project next-app --web",
-  "targets": {},
-  "implicitDependencies": ["design-tokens"]
+  "targets": {
+    "build": {
+      "inputs": [
+        "default",
+        "^default",
+        {
+          "externalDependencies": [
+            "next"
+          ]
+        },
+        {
+          "dependentTasksOutputFiles": "**/*.d.ts",
+          "transitive": true
+        },
+        {
+          "runtime": "node tools/next-public-config-hash.cjs"
+        }
+      ]
+    }
+  },
+  "implicitDependencies": [
+    "design-tokens",
+    "config"
+  ]
 }

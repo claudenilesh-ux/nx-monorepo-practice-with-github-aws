@@ -26,6 +26,9 @@
       ],
       "@nx-learning/project-data": [
         "./libs/project-data/src/index.ts"
+      ],
+      "@nx-learning/config": [
+        "./libs/config/src/index.ts"
       ]
     }
   },

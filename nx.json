@@ -4,6 +4,7 @@
   "namedInputs": {
     "default": [
       "{projectRoot}/**/*",
+      "!{projectRoot}/.env*",
       "sharedGlobals"
     ],
     "production": [

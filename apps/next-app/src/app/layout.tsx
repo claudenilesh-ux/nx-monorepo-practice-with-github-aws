@@ -1,10 +1,13 @@
 import { ClerkProvider } from '@clerk/nextjs';
 import { dark } from '@clerk/ui/themes';
+import { requiredValue } from '@nx-learning/config';
 import './global.scss';
 
 export const metadata = { title: 'Archloom', description: 'Project editor' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  requiredValue('NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY', process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+  requiredValue('CLERK_SECRET_KEY', process.env.CLERK_SECRET_KEY);
   return <html lang="en"><body><ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up" afterSignOutUrl={process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL} localization={{ formFieldInputPlaceholder__emailAddress: "Enter your email", signIn: { start: { title: "Welcome to Archloom", titleCombined: "Welcome to Archloom", subtitle: "Sign in to your workspace", actionText: "New here?" } } }} appearance={{
     theme: dark,
     options: { socialButtonsVariant: 'blockButton' },
