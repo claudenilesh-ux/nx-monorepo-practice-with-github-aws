@@ -6,6 +6,7 @@ import type { DetailedHTMLProps, HTMLAttributes } from "react";
 import { readProjects, validateProjectName, type Project } from "@nx-learning/project-data";
 import type { SidebarTab, SicSidebar } from "@nx-learning/shared-sections";
 import type { LitElement } from "lit";
+import ProjectCanvas from "./project-canvas";
 import { ProjectsApi, ProjectsApiError, type ApiProject } from "./projects-api";
 
 type ElementProps = DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>;
@@ -26,7 +27,7 @@ const Button = "uic-button" as React.ElementType<ElementProps & { slot?: string 
 type Store = { identity: string; projects: ApiProject[]; status: "loading" | "loaded" | "error" };
 type DialogState = { mode: "create" | "rename" | "delete"; project: ApiProject | null };
 
-export default function Editor() {
+export default function Editor({ projectId = null }: { projectId?: string | null }) {
   const { isLoaded, isSignedIn, userId, sessionId, getToken } = useAuth();
   const router = useRouter();
   const { signOut } = useClerk();
@@ -40,7 +41,7 @@ export default function Editor() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<SidebarTab>("mine");
   const [store, setStore] = useState<Store | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selectedId = projectId;
   const [dialog, setDialog] = useState<DialogState | null>(null);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
@@ -53,11 +54,11 @@ export default function Editor() {
   const projectDialog = useRef<HTMLElement>(null);
   const visible = store?.identity === identity && identity ? store : null;
   const projects = visible?.projects ?? [];
-  const selected = projects.find(project => project.id === selectedId);
+  const selected = visible?.status === "loaded" ? projects.find(project => project.id === selectedId) : undefined;
 
   useEffect(() => { if (isLoaded && !isSignedIn) router.replace("/sign-in"); }, [isLoaded, isSignedIn, router]);
   useEffect(() => { import("@nx-learning/shared-sections").then(() => { setSidebarOpen(window.innerWidth >= 768); setReady(true); }); }, []);
-  const clearProtected = () => { setStore(null); setSelectedId(null); setDialog(null); setPending(false); submitting.current = false; };
+  const clearProtected = () => { setStore(null); setDialog(null); setPending(false); submitting.current = false; };
   const endRejectedSession = async (id: string, rejectedSessionId: string) => {
     setSignOutFailed(false);
     try { await signOut({ sessionId: rejectedSessionId, redirectUrl: "/sign-in" }); }
@@ -79,7 +80,6 @@ export default function Editor() {
       const list = await client().list(controller.signal);
       if (currentIdentity.current !== id || version !== loadVersion.current || controller.signal.aborted) return false;
       setStore({ identity: id, projects: list, status: "loaded" });
-      setSelectedId(previous => list.some(item => item.id === previous) ? previous : null);
       return true;
     } catch (error) {
       if (currentIdentity.current !== id || version !== loadVersion.current || controller.signal.aborted) return false;
@@ -130,10 +130,10 @@ export default function Editor() {
       if (dialog.mode === "delete" && dialog.project) {
         restoreDeleteFocus();
         setStore(previous => previous?.identity === id ? { ...previous, projects: previous.projects.filter(item => item.id !== dialog.project?.id) } : previous);
-        setSelectedId(previous => previous === dialog.project?.id ? null : previous);
+        if (selectedId === dialog.project.id) router.replace("/editor");
       } else if (result) {
         setStore(previous => previous?.identity === id ? { ...previous, projects: dialog.mode === "create" ? [result, ...previous.projects].sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id)) : previous.projects.map(item => item.id === result.id ? result : item) } : previous);
-        if (dialog.mode === "create") { setSelectedId(result.id); setActiveTab("mine"); }
+        if (dialog.mode === "create") { router.push(`/editor/${result.id}`); setActiveTab("mine"); }
       }
       setDialog(null);
     } catch (error) {
@@ -155,16 +155,16 @@ export default function Editor() {
   if (!ready || !isLoaded || !isSignedIn || !identity) return null;
   if (rejectedIdentity === identity) return <main><p role="alert">{signOutFailed ? "Unable to sign out. Please try again." : "Session expired. Signing out…"}</p>{signOutFailed && <Button onClick={() => { if (sessionId) void endRejectedSession(identity, sessionId); }}>Retry sign out</Button>}</main>;
   return <div style={{ height: "100dvh", display: "flex", flexDirection: "column" }}>
-    <Navbar ref={navbar} sidebarOpen={sidebarOpen} onsidebar-toggle={() => setSidebarOpen(value => !value)}><div slot="right"><UserButton /></div></Navbar>
+    <Navbar ref={navbar} sidebarOpen={sidebarOpen} onsidebar-toggle={() => setSidebarOpen(value => !value)}>{selected && <span slot="center" style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{selected.name}</span>}<div slot="right"><UserButton /></div></Navbar>
     <main style={{ position: "relative", flex: 1, minHeight: 0, background: "var(--bg-base)", display: "block", margin: 0, padding: 0, maxWidth: "none" }}>
-      <Sidebar ref={sidebar} isOpen={sidebarOpen} activeTab={activeTab} projects={projects} selectedId={visible ? selectedId : null} loading={!visible || visible.status === "loading"} loadError={visible?.status === "error"} onproject-create={() => openDialog("create")} onproject-select={(event: CustomEvent<{ id: string }>) => setSelectedId(event.detail.id)} onproject-edit={(event: CustomEvent<{ id: string }>) => { const item = projects.find(project => project.id === event.detail.id); if (item) openDialog("rename", item); }} onproject-delete={(event: CustomEvent<{ id: string }>) => { const item = projects.find(project => project.id === event.detail.id); if (item) openDialog("delete", item); }} onsidebar-close={closeSidebar} ontab-change={(event: CustomEvent<{ value: SidebarTab }>) => setActiveTab(event.detail.value)} />
-      <div style={{ position: "absolute", top: 0, right: 0, padding: "var(--space-4)" }}>
+      <Sidebar ref={sidebar} isOpen={sidebarOpen} activeTab={activeTab} projects={projects} selectedId={visible ? selectedId : null} loading={!visible || visible.status === "loading"} loadError={visible?.status === "error"} onproject-create={() => openDialog("create")} onproject-select={(event: CustomEvent<{ id: string }>) => router.push(`/editor/${event.detail.id}`)} onproject-edit={(event: CustomEvent<{ id: string }>) => { const item = projects.find(project => project.id === event.detail.id); if (item) openDialog("rename", item); }} onproject-delete={(event: CustomEvent<{ id: string }>) => { const item = projects.find(project => project.id === event.detail.id); if (item) openDialog("delete", item); }} onsidebar-close={closeSidebar} ontab-change={(event: CustomEvent<{ value: SidebarTab }>) => setActiveTab(event.detail.value)} />
+      <div style={{ position: "absolute", zIndex: 1, top: 0, right: 0, padding: "var(--space-4)" }}>
         {legacy?.identity === identity && (legacy.error ? <p role="alert">Local projects could not be read. Existing data was preserved.</p> : !!legacy.projects?.length && <p>Legacy projects are local-only and not synchronized. <Button onClick={exportLegacy}>Export JSON backup</Button></p>)}
         {message && !dialog && <p role="alert">{message}</p>}
         {visible?.status === "error" && <Button onClick={() => { setMessage(""); void load(identity, true); }}>Retry loading projects</Button>}
       </div>
       {visible?.status === "loading" && <p role="status">Loading projects…</p>}
-      {visible?.status === "loaded" && <div style={{ height: "100%", display: "grid", placeItems: "center" }}>{selected ? <h1>{selected.name}</h1> : <EmptyState heading="No project selected"><Button slot="action" onClick={() => openDialog("create")}><Icon name="plus" size="sm" />Create Project</Button></EmptyState>}</div>}
+      {visible?.status === "loaded" && <div style={{ height: "100%", display: "grid", placeItems: "center" }}>{selected ? <ProjectCanvas key={`${identity}:${selected.id}`} /> : projectId ? <EmptyState heading="Project unavailable"><Button slot="action" onClick={() => router.replace("/editor")}>Return to editor</Button></EmptyState> : <EmptyState heading="No project selected"><Button slot="action" onClick={() => openDialog("create")}><Icon name="plus" size="sm" />Create Project</Button></EmptyState>}</div>}
       <Dialog ref={projectDialog} open={!!dialog && !!visible} mode={dialog?.mode ?? "create"} project={visible ? dialog?.project ?? null : null} projects={projects} storageError={message} validationError={validationError} pending={pending} blocked={visible?.status === "error"} onproject-retry={() => { setMessage(""); void load(identity, true); }} onproject-cancel={() => { if (!submitting.current) { setDialog(null); setMessage(""); } }} onproject-submit={submit} />
     </main>
   </div>;

@@ -5,7 +5,9 @@ let mockSessionId = 'session';
 const mockGetToken = jest.fn(async () => 'token');
 const mockSignOut = jest.fn(async (_options: { sessionId: string; redirectUrl: string }) => undefined);
 jest.mock('@clerk/nextjs', () => ({ useAuth: () => ({ isLoaded: true, isSignedIn: true, userId: mockUserId, sessionId: mockSessionId, getToken: mockGetToken }), useClerk: () => ({ signOut: mockSignOut }), UserButton: () => null }));
-jest.mock('next/navigation', () => ({ useRouter: () => ({ replace: jest.fn() }) }));
+const mockPush = jest.fn();
+const mockReplace = jest.fn();
+jest.mock('next/navigation', () => ({ useRouter: () => ({ replace: mockReplace, push: mockPush }) }));
 jest.mock('@nx-learning/shared-sections', () => {
   for (const name of ['sic-editor-navbar', 'sic-sidebar', 'sic-project-dialog', 'uic-empty-state', 'uic-button', 'uic-icon']) {
     if (!customElements.get(name)) customElements.define(name, class extends HTMLElement { projects: unknown[] = []; loading = false; });
@@ -92,15 +94,14 @@ it('preserves unreadable legacy data and still loads server projects', async () 
 it('renames and deletes only after server confirmation', async () => {
   const renamed = { ...project, name: 'Renamed', slug: 'renamed' };
   jest.mocked(fetch).mockResolvedValueOnce(json({ projects: [project] })).mockResolvedValueOnce(json({ project: renamed })).mockResolvedValueOnce({ ok: true, status: 204 } as Response);
-  const { container } = render(<Editor />);
+  const { container } = render(<Editor projectId={project.id} />);
   await waitFor(() => expect((container.querySelector('sic-sidebar') as HTMLElement & { projects: unknown[] })?.projects).toEqual([project]));
   const sidebar = container.querySelector('sic-sidebar'); const dialog = container.querySelector('sic-project-dialog');
   if (!sidebar || !dialog) throw new Error('Editor components missing');
-  act(() => sidebar.dispatchEvent(new CustomEvent('project-select', { detail: { id: project.id } })));
   act(() => sidebar.dispatchEvent(new CustomEvent('project-edit', { detail: { id: project.id } })));
   act(() => dialog.dispatchEvent(new CustomEvent('project-submit', { detail: { name: 'Renamed', slug: 'renamed' } })));
   await waitFor(() => expect((sidebar as HTMLElement & { projects: unknown[] }).projects).toEqual([renamed]));
-  expect(container.querySelector('h1')?.textContent).toBe('Renamed');
+  expect(container.querySelector('[slot=center]')?.textContent).toBe('Renamed');
   act(() => sidebar.dispatchEvent(new CustomEvent('project-delete', { detail: { id: project.id } })));
   act(() => dialog.dispatchEvent(new CustomEvent('project-submit')));
   await waitFor(() => expect((sidebar as HTMLElement & { projects: unknown[] }).projects).toEqual([]));
@@ -171,4 +172,32 @@ it('ignores a 401 from an aborted previous identity', async () => {
   await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
   await act(async () => rejectFirst({ ok: false, status: 401, json: async () => ({ error: { code: 'UNAUTHORIZED', message: 'test' } }) } as Response));
   expect(mockSignOut).not.toHaveBeenCalled();
+});
+
+it('shows a verified project from its workspace route', async () => {
+  jest.mocked(fetch).mockResolvedValueOnce(json({ projects: [project] }));
+  const { findByText } = render(<Editor projectId={project.id} />);
+  expect(await findByText('First')).toBeTruthy();
+});
+
+it('shows a generic unavailable state for an unknown route after loading', async () => {
+  jest.mocked(fetch).mockResolvedValueOnce(json({ projects: [project] }));
+  const { container, findByText } = render(<Editor projectId="invalid" />);
+  expect(await findByText('Return to editor')).toBeTruthy();
+  expect(container.querySelector('[aria-label="Project canvas"]')).toBeNull();
+  expect(container.textContent).not.toContain('First');
+});
+
+it('navigates to the selected project and replaces the route after deleting it', async () => {
+  mockPush.mockClear(); mockReplace.mockClear();
+  jest.mocked(fetch).mockResolvedValueOnce(json({ projects: [project] })).mockResolvedValueOnce({ ok: true, status: 204 } as Response);
+  const { container } = render(<Editor projectId={project.id} />);
+  await waitFor(() => expect((container.querySelector('sic-sidebar') as HTMLElement & { projects: unknown[] })?.projects).toEqual([project]));
+  const sidebar = container.querySelector('sic-sidebar'); const dialog = container.querySelector('sic-project-dialog');
+  if (!sidebar || !dialog) throw new Error('Editor components missing');
+  act(() => sidebar.dispatchEvent(new CustomEvent('project-select', { detail: { id: project.id } })));
+  expect(mockPush).toHaveBeenCalledWith(`/editor/${project.id}`);
+  act(() => sidebar.dispatchEvent(new CustomEvent('project-delete', { detail: { id: project.id } })));
+  act(() => dialog.dispatchEvent(new CustomEvent('project-submit')));
+  await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/editor'));
 });

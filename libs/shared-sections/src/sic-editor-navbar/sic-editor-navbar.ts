@@ -6,6 +6,7 @@ export class SicEditorNavbar extends LitElement {
   static override styles = css`
     :host { display: block; }
     uic-nav { box-sizing: border-box; height: var(--nav-height); }
+    slot[name="center"] { min-width: 0; overflow: hidden; }
   `;
 
   declare sidebarOpen: boolean;
@@ -35,6 +36,7 @@ export class SicEditorNavbar extends LitElement {
           .expanded=${this.sidebarOpen}
           @click=${this.toggleSidebar}
         ></uic-icon-button>
+        <slot name="center" slot="center"></slot>
         <slot name="right" slot="right"></slot>
       </uic-nav>
     `;
