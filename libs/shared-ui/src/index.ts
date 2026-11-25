@@ -12,3 +12,5 @@ export * from "./uic-avatar/uic-avatar";
 export * from "./uic-nav/uic-nav";
 export * from "./uic-list-item/uic-list-item";
 export * from "./uic-empty-state/uic-empty-state";
+
+export * from "./uic-profile/uic-profile";

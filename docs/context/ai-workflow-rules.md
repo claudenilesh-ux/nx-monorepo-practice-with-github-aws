@@ -108,3 +108,14 @@ For prerequisite failures:
 - Reuse previous successful verification evidence when it remains applicable.
 
 Never mark an unverified requirement as PASS.
+
+## Progress Tracker Rules
+
+- Keep `progress-tracker.md` concise and up to date.
+- Maintain one short entry per completed feature.
+- Update existing entries instead of repeatedly appending session history.
+- Record only meaningful implementation progress, verification results and unresolved blockers.
+- Remove obsolete blockers once resolved.
+- Keep detailed logs, command outputs, screenshots and file-level changes in implementation reports or pull requests.
+- Never mark unverified functionality as PASS.
+- Update Current Phase, Current Goal, In Progress and Next Up after every feature.

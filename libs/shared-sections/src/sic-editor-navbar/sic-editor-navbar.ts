@@ -35,6 +35,7 @@ export class SicEditorNavbar extends LitElement {
           .expanded=${this.sidebarOpen}
           @click=${this.toggleSidebar}
         ></uic-icon-button>
+        <slot name="right" slot="right"></slot>
       </uic-nav>
     `;
   }
