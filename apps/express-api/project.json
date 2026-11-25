@@ -65,7 +65,27 @@
     "test": {
       "options": {
         "passWithNoTests": true
+      },
+      "dependsOn": [
+        "prisma-generate"
+      ]
+    },
+    "prisma-generate": {
+      "command": "prisma generate",
+      "options": {
+        "cwd": "."
       }
+    },
+    "build": {
+      "dependsOn": [
+        "prisma-generate"
+      ]
+    },
+    "typecheck": {
+      "command": "tsc --noEmit -p apps/express-api/tsconfig.app.json",
+      "dependsOn": [
+        "prisma-generate"
+      ]
     }
   }
 }

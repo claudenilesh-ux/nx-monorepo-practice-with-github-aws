@@ -60,3 +60,5 @@ coverage/
 .env.*
 !.env.example
 .DS_Store
+# Prisma generated client
+/apps/express-api/src/generated/prisma/

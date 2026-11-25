@@ -3,27 +3,29 @@
 Update this file when a feature changes status. Keep one concise entry per feature; record only actual results and outstanding checks.
 
 ## Current Phase
-- Feature 04 — Local Project Management (Next.js implementation in verification).
+- Feature 04 — Remaining browser verification; Feature 05 complete.
 
 ## Current Goal
-- Create, rename and delete projects using shared Lit dialogs in Next.js.
-- Validate project names and generated slugs; persist projects locally per signed-in user.
+- Complete Feature 04 authenticated browser and accessibility verification.
 
 ## Completed Implementation
 
 - Foundation — Nx workspace with Angular, Next.js and Express; shared design-tokens, shared-ui and shared-sections libraries; main/dev workflow.
 - Feature 01: Design System — Shared SCSS tokens, Lit UICs and Lucide icons implemented. Shadow DOM icon rendering and accessible tabs corrected. Focused tests, lint, type checks and browser checks passed.
 - Feature 02: Editor Layout — Shared editor navbar, floating project sidebar, tabs, empty states and reusable dialog pattern implemented in both apps. Responsive layout, sidebar controls and unchanged canvas bounds verified.
+- Feature 05: PostgreSQL 17 and Prisma 7 local database foundation, initial migration and reusable Express client implemented and verified.
 - Feature 03: Clerk Authentication — Clerk integrated with protected editor routes and native account UI. Next.js Clerk URLs are configured locally; sign-in and sign-up force redirects to the editor, and sign-out uses the configured destination. Next.js sign-in/sign-up screens use Archloom branding, the supplied split-screen visual reference and existing design tokens; sign-in copy matches the mock and responsive form layout was checked. Developer reports sign-in and sign-out working; remaining acceptance checks are listed below.
 
 ## In Progress
 
-- Feature 04: Next.js local project management implemented. Deletion focus fix passes focused tests; authenticated desktop and mobile browser verification is pending.
+- Feature 05A: PASS — configuration checks and production builds passed; Chrome observed signed-in editor access, sign-out and protected-route redirect. Compose loaded app-local settings; synthetic Docker context checks, private-file Git ignores, current Nx cache scan and Angular diff check passed.
+
+- Feature 04: deletion focus passed regression tests and authenticated desktop/390px browser checks. Mobile dialog accessibility: Lighthouse 100, no failed audits; Escape restores focus and no horizontal overflow. Live account switching remains unverified: no second account visible in the current Clerk session.
 
 ## Next Up
 
 - Feature 04: Local Project Management — `docs/context/feature-specs/04-local-project-management.md`.
-- Future: Express API authentication, project ownership and database persistence (separate specs).
+- Future: Express API authentication, project ownership and frontend integration (separate specs).
 
 ## Verification
 
@@ -41,8 +43,10 @@ Update this file when a feature changes status. Keep one concise entry per featu
 - BLOCKED: Default Nx Next.js build: Turbopack could not bind a worker port in this environment. Webpack production build passed.
 - PASS: Desktop create/rename/delete cancellation preserved storage; Enter created projects; validation feedback was associated with its input; row actions preserved selection and cancel restored action focus. Lighthouse desktop dialog snapshot: accessibility 100, no failed audits. Current-user storage key matched the Clerk user ID.
 - PASS: Focused Next.js tests (6), TypeScript and lint after the deletion focus change; lint retains one existing preview warning.
-- PENDING: Verify deletion focus and remaining accessibility checks at desktop and 390px in a signed-in browser. The previous implementation placed focus on `body` after the last deletion; the new fix is not yet browser-verified.
+- PASS: Last-project deletion returns focus to New Project on desktop and at 390px; mobile dialog Escape restores focus. Lighthouse mobile dialog accessibility 100 with no failed audits; no horizontal overflow. Focus regression tests passed (2 cases).
 - NOT RUN: Live identity switch with a second Clerk account and developer-terminal default Nx build result.
+
+- PASS: Feature 05 PostgreSQL 17 Compose health, Prisma 7.10 validation/generation, initial migration and status, synthetic CRUD/uniqueness/stable-ID checks, restart persistence and fixture cleanup. Express Nx test, lint, typecheck, clean-generation build and existing `/api` endpoint passed. Browser checks not applicable.
 
 ## Open Questions
 
@@ -54,7 +58,7 @@ Update this file when a feature changes status. Keep one concise entry per featu
 - Next.js is the only active Architecture Studio frontend; Angular is reserved for a separate future project and its existing contracts remain intact. Express remains available when required.
 - Shared SCSS design tokens; no duplicated component implementations or hardcoded theme colors.
 - Clerk owns authentication UI and sessions; frontend integrations stay outside shared Lit libraries.
-- Feature 04 uses browser localStorage scoped by Clerk user. Data is separate per browser origin; no server persistence yet.
+- Feature 04 uses browser localStorage scoped by Clerk user. Feature 05 adds a separate local PostgreSQL foundation; no frontend database integration yet.
 - Private Express project APIs require server-side authentication and ownership checks before exposure.
 - Implement approved feature specs on dev; verify changes before PR to main.
 

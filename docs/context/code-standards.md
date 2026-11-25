@@ -27,3 +27,7 @@ Use public entry points. Respect actual Nx generated conventions, document appro
 ## Tests and verification
 The shared-ui Jest target supports Lit ESM using its own configuration; retain strict TypeScript checks and existing tests.
 Use installed compatible test tooling. Add focused tests for component properties/events, API validation, service CRUD and error paths. Browser verification must cover both frontends when shared UI changes; inspect console, network, DOM, screenshots and accessibility basics. Keep tests local and deterministic. Use actual Nx project names and available targets from `nx show projects` and `nx show project <name>`; never claim a command passed unless it was run successfully.
+
+## Environment configuration
+
+Applications own `.env.local` values and tracked `.env.example` placeholders. Shared config only validates supplied values; it does not load files or contain credentials. Respect process-variable precedence, keep server values out of browser code and reports, and exclude private files from Git, Docker contexts and Nx cache inputs. Include build-time public values in cache hashes.

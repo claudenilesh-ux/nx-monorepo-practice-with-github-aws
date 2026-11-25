@@ -81,7 +81,7 @@ Inspect its Clerk package versions before changing anything and use the version 
 
 Follow this branch when the user asks to use an existing Clerk application or an existing Clerk project needs its keys restored. If they supplied an application ID, keep it for `init` or `link` as appropriate. Otherwise, if the Clerk MCP server is connected, list the applications with its `list_applications` tool.
 
-Signing in to the MCP server doesn't sign in the CLI, which still writes the keys. Before login, check whether an init claim file exists without reading its contents. If it exists and the user intends to use a different application, have them sign in from another directory first; a login here can claim the init application. Otherwise, have the user authenticate the CLI from their host terminal:
+Signing in to the MCP server doesn't sign in the CLI, which still writes the keys. Before login, check for both init and SDK claim files without reading their contents. If both exist, follow the dual-claim safeguard in After setup and stop before login until the user identifies the correct claim. If an init claim exists and the user intends to use a different application, have them sign in from another directory first; a login here can claim the init application. Otherwise, have the user authenticate the CLI from their host terminal:
 
 ```bash
 npx -y clerk@latest auth login

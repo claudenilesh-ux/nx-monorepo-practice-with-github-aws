@@ -17,7 +17,7 @@ Check `package.json` to determine the Clerk SDK version. This determines which p
 | Package                                | Core 2 (LTS until Jan 2027) | Current  |
 | -------------------------------------- | --------------------------- | -------- |
 | `@clerk/nextjs`                        | v5–v6                       | v7+      |
-| `@clerk/clerk-react`                   | v5–v6                       | —        |
+| `@clerk/clerk-react`                   | v5                          | —        |
 | `@clerk/react`                         | —                           | v6+      |
 | `@clerk/expo` or `@clerk/clerk-expo`   | v1–v2                       | v3+      |
 | `@clerk/react-router`                  | v1–v2                       | v3+      |
