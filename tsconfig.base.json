@@ -23,6 +23,9 @@
       ],
       "@nx-learning/shared-sections": [
         "./libs/shared-sections/src/index.ts"
+      ],
+      "@nx-learning/project-data": [
+        "./libs/project-data/src/index.ts"
       ]
     }
   },

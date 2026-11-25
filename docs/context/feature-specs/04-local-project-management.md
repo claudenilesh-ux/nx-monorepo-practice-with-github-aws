@@ -1,10 +1,10 @@
 # Feature 04 - Local Project Management
 
-Read `AGENTS.md`, the required context files and the existing editor/authentication specs before starting. Work on `dev`. Inspect existing implementation and reuse it. This spec is proposed for developer approval.
+Read `AGENTS.md`, the required context files and the existing editor/authentication specs before starting. Work on `dev`. Inspect existing implementation and reuse it. This spec is approved for Next.js only.
 
 ## Objective
 
-Allow signed-in users to create, select, rename and delete local projects in both Angular and Next.js using the existing dark editor layout and shared Lit components.
+Allow signed-in users to create, select, rename and delete local projects in Next.js using the existing dark editor layout and shared Lit components.
 
 ## Implementation
 
@@ -46,29 +46,29 @@ Allow signed-in users to create, select, rename and delete local projects in bot
 
 - Model: `{ id: string; name: string; slug: string }`; generate a stable UUID once on create. Rename never changes the ID.
 - Use browser `localStorage` with a versioned key scoped by the authenticated Clerk user ID. Start with an empty list; persist successful create/rename/delete operations across reloads.
-- Angular and Next.js use the same pure TypeScript validation, slug and local repository logic via an existing suitable shared library; create one narrowly scoped Nx library only if no suitable owner exists. No duplicated business rules.
-- Read storage only after authentication and browser initialization; reset/reload state on identity changes. Never store Clerk tokens, secrets or profile data. Storage is local to the browser origin; Angular and Next.js on different ports do not synchronize. This is not a security boundary or server-side authorization.
+- Use framework-independent TypeScript validation, slug and local repository logic via an existing suitable shared library; create one narrowly scoped Nx library only if no suitable owner exists.
+- Read storage only after authentication and browser initialization; reset/reload state on identity changes. Never store Clerk tokens, secrets or profile data. Storage is local to the browser origin; Different browser origins do not synchronize. This is not a security boundary or server-side authorization.
 - Validate stored data on read. On malformed/unavailable storage or failed writes, show an error and preserve existing data; do not silently overwrite it or claim a successful mutation.
 - This iteration explicitly defers the previously planned Express-backed project repository. Update architecture/project overview only to record this temporary local-storage decision; keep future backend ownership unchanged.
 
 ## UI and scope
 
 - Reuse the existing shared `uic-modal`, `uic-input`, `uic-button`, `uic-icon`, `uic-icon-button`, `uic-list-item`, `uic-empty-state` and `sic-sidebar` contracts. Extend only missing optional seams needed here (secondary row text, validation feedback, destructive action styling, or project row inputs/events); preserve existing consumers.
-- Shared Lit create/rename form and delete confirmation composition belong in `libs/shared-sections/src/`; apps own authenticated state and persistence orchestration. UIC/SIC must not access Clerk or storage. Use typed properties/events and existing public exports. No duplicate Angular/React dialog markup or component styles.
+- Shared Lit create/rename form and delete confirmation composition belong in `libs/shared-sections/src/`; apps own authenticated state and persistence orchestration. UIC/SIC must not access Clerk or storage. Use typed properties/events and existing public exports. Do not duplicate dialog markup or component styles.
 - Keep global SCSS tokens, dark theme, responsive floating sidebar and Clerk route protection intact. Use native dialog focus management, accessible labels, keyboard activation, visible focus, associated validation feedback and focus return to trigger (or a logical surviving control after deletion). Prevent duplicate submission.
-- Target existing editor routes in `apps/angular-app/` and `apps/next-app/`, `libs/shared-sections/src/sic-sidebar/`, required shared UICs in `libs/shared-ui/src/`, and the shared project logic. Inspect actual paths and import aliases before changes.
+- Target the existing editor route in `apps/next-app/`, `libs/shared-sections/src/sic-sidebar/`, required shared UICs in `libs/shared-ui/src/`, and the shared project logic. Inspect actual paths and import aliases before changes.
 - Out of scope: Express APIs, database, real sharing, diagram editing, slug-based routing, Clerk changes, new UI/icon dependencies, deployment and unrelated refactoring.
 
 ## Check when done
 
-Use Chrome DevTools MCP against `http://localhost:4200/editor` and `http://localhost:3000/editor` with signed-in sessions.
+Use Chrome DevTools MCP against `http://localhost:3000/editor` with signed-in sessions.
 
 - [ ] Create dialog opens from both entry points; live slug and invalid/duplicate-name checks work.
 - [ ] Create/select, rename (same ID), cancel and confirmed delete work; row actions do not select unintentionally.
 - [ ] Refresh retains projects; identity changes do not display the previous user's list; storage failures do not discard data silently.
 - [ ] Last deletion restores empty states; Shared tab remains unchanged; Clerk sign-in/sign-out and protected routes are preserved.
-- [ ] Both apps use shared UIC/SIC and global dark tokens; keyboard, focus and desktop/mobile layouts work; no unexpected console/network/hydration errors. Capture browser evidence.
-- [ ] Focused tests cover validation, slug collisions, persistence and mutation behavior; run applicable Nx lint/test targets for changed projects, `npx nx run-many -t build --projects=angular-app,next-app`, and `git diff --check`.
+- [ ] Next.js uses shared UIC/SIC and global dark tokens; keyboard, focus and desktop/mobile layouts work; no unexpected console/network/hydration errors. Capture browser evidence.
+- [ ] Focused tests cover validation, slug collisions, persistence and mutation behavior; run applicable Nx lint/test targets for changed projects, the Next.js production build, and `git diff --check`.
 - [ ] Update `docs/context/progress-tracker.md` with actual results. Report changed files, exact commands/results, browser evidence and remaining blockers. Use PASS/FAIL/BLOCKED/NOT RUN; continue independent approved work if verification is unavailable.
 
 Do not commit, push, merge or begin the next feature without approval.

@@ -1,0 +1,8 @@
+{
+  "name": "project-data",
+  "sourceRoot": "libs/project-data/src",
+  "projectType": "library",
+  "targets": {
+    "test": { "executor": "nx:run-commands", "options": { "command": "node --experimental-strip-types --test libs/project-data/src/project-data.test.mjs" } }
+  }
+}

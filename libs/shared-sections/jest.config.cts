@@ -3,7 +3,7 @@ module.exports = {
   preset: '../../jest.preset.js',
   testEnvironment: 'node',
   extensionsToTreatAsEsm: ['.ts'],
-  moduleNameMapper: { '^@nx-learning/shared-ui$': '<rootDir>/../shared-ui/src/index.ts' },
+  moduleNameMapper: { '^@nx-learning/shared-ui$': '<rootDir>/../shared-ui/src/index.ts', '^@nx-learning/project-data$': '<rootDir>/../project-data/src/index.ts' },
   transform: {
     '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json', useESM: true }]
   },
