@@ -1,168 +1,171 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { UserButton, useAuth } from "@clerk/nextjs";
+import { UserButton, useAuth, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import type { DetailedHTMLProps, HTMLAttributes } from "react";
-import { readProjects, writeProjects, validateProjectName, type Project } from "@nx-learning/project-data";
+import { readProjects, validateProjectName, type Project } from "@nx-learning/project-data";
 import type { SidebarTab, SicSidebar } from "@nx-learning/shared-sections";
 import type { LitElement } from "lit";
+import { ProjectsApi, ProjectsApiError, type ApiProject } from "./projects-api";
 
-// React needs types for these shared Lit custom elements and their events.
 type ElementProps = DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>;
-const Navbar = "sic-editor-navbar" as React.ElementType<
-  ElementProps & { sidebarOpen?: boolean; "onsidebar-toggle"?: () => void }
->;
-const Sidebar = "sic-sidebar" as React.ElementType<
-  ElementProps & {
-    isOpen?: boolean;
-    activeTab?: SidebarTab;
-    projects?: Project[];
-    selectedId?: string | null;
-    "onproject-create"?: () => void;
-    "onproject-select"?: (event: CustomEvent<{ id: string }>) => void;
-    "onproject-edit"?: (event: CustomEvent<{ id: string }>) => void;
-    "onproject-delete"?: (event: CustomEvent<{ id: string }>) => void;
-    "onsidebar-close"?: () => void;
-    "ontab-change"?: (event: CustomEvent<{ value: SidebarTab }>) => void;
-  }
->;
-
+const Navbar = "sic-editor-navbar" as React.ElementType<ElementProps & { sidebarOpen?: boolean; "onsidebar-toggle"?: () => void }>;
+const Sidebar = "sic-sidebar" as React.ElementType<ElementProps & {
+  isOpen?: boolean; activeTab?: SidebarTab; projects?: Project[]; selectedId?: string | null; loading?: boolean; loadError?: boolean;
+  "onproject-create"?: () => void; "onproject-select"?: (event: CustomEvent<{ id: string }>) => void;
+  "onproject-edit"?: (event: CustomEvent<{ id: string }>) => void; "onproject-delete"?: (event: CustomEvent<{ id: string }>) => void;
+  "onsidebar-close"?: () => void; "ontab-change"?: (event: CustomEvent<{ value: SidebarTab }>) => void;
+}>;
 const Dialog = "sic-project-dialog" as React.ElementType<ElementProps & {
-  open?: boolean; mode?: "create" | "rename" | "delete"; project?: Project | null; projects?: Project[]; storageError?: string;
-  "onproject-cancel"?: () => void;
-  "onproject-submit"?: (event: CustomEvent<{ name: string; slug: string }>) => void;
+  open?: boolean; mode?: "create" | "rename" | "delete"; project?: Project | null; projects?: Project[]; storageError?: string; validationError?: string; pending?: boolean; blocked?: boolean; "onproject-retry"?: () => void;
+  "onproject-cancel"?: () => void; "onproject-submit"?: (event: CustomEvent<{ name: string; slug: string }>) => void;
 }>;
 const EmptyState = "uic-empty-state" as React.ElementType<ElementProps & { heading?: string }>;
 const Icon = "uic-icon" as React.ElementType<ElementProps & { name?: string; size?: string }>;
 const Button = "uic-button" as React.ElementType<ElementProps & { slot?: string }>;
+type Store = { identity: string; projects: ApiProject[]; status: "loading" | "loaded" | "error" };
+type DialogState = { mode: "create" | "rename" | "delete"; project: ApiProject | null };
 
 export default function Editor() {
-  const { isLoaded, isSignedIn, userId } = useAuth();
+  const { isLoaded, isSignedIn, userId, sessionId, getToken } = useAuth();
   const router = useRouter();
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) router.replace("/sign-in");
-  }, [isLoaded, isSignedIn, router]);
+  const { signOut } = useClerk();
+  const identity = isLoaded && isSignedIn && userId && sessionId ? `${userId}:${sessionId}` : "";
+  const currentIdentity = useRef(identity); currentIdentity.current = identity;
+  const requests = useRef(new Set<AbortController>());
+  const loadVersion = useRef(0);
+  const submitting = useRef(false);
+  const rejected = useRef("");
   const [ready, setReady] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<SidebarTab>("mine");
+  const [store, setStore] = useState<Store | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [dialog, setDialog] = useState<DialogState | null>(null);
+  const [pending, setPending] = useState(false);
+  const [message, setMessage] = useState("");
+  const [rejectedIdentity, setRejectedIdentity] = useState("");
+  const [signOutFailed, setSignOutFailed] = useState(false);
+  const [validationError, setValidationError] = useState("");
+  const [legacy, setLegacy] = useState<{ identity: string; projects: Project[] | null; error: boolean } | null>(null);
   const navbar = useRef<HTMLElement>(null);
   const sidebar = useRef<SicSidebar>(null);
   const projectDialog = useRef<HTMLElement>(null);
-  const [store, setStore] = useState<{ userId: string; projects: Project[] } | null>(null);
-  const [storageError, setStorageError] = useState("");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [dialog, setDialog] = useState<{ mode: "create" | "rename" | "delete"; project: Project | null } | null>(null);
-  const submitting = useRef(false);
-
-  useEffect(() => {
-    setStore(null); setSelectedId(null); setDialog(null); setStorageError("");
-    if (!ready || !isLoaded || !isSignedIn || !userId) return;
-    try { setStore({ userId, projects: readProjects(window.localStorage, userId) }); }
-    catch { setStorageError("Unable to read local projects. Existing data was preserved."); }
-  }, [ready, isLoaded, isSignedIn, userId]);
-  const projects = store && store.userId === userId ? store.projects : [];
+  const visible = store?.identity === identity && identity ? store : null;
+  const projects = visible?.projects ?? [];
   const selected = projects.find(project => project.id === selectedId);
-  const openDialog = (mode: "create" | "rename" | "delete", project: Project | null = null) => { submitting.current = false; setDialog({ mode, project }); };
-  const submit = (event: CustomEvent<{ name: string; slug: string }>) => {
-    if (!dialog || !store || store.userId !== userId || submitting.current) return;
-    submitting.current = true;
-    try {
-      const current = readProjects(window.localStorage, store.userId);
-      let next = current;
-      let nextSelected = selectedId;
-      if (dialog.mode === "delete" && dialog.project) {
-        next = current.filter(project => project.id !== dialog.project?.id);
-        if (selectedId === dialog.project.id) nextSelected = null;
-      } else {
-        const valid = validateProjectName(event.detail.name, current, dialog.project?.id);
-        if (valid.error !== undefined || valid.slug !== event.detail.slug) {
-          setStore({ userId: store.userId, projects: current });
-          submitting.current = false;
-          return;
-        }
-        if (dialog.mode === "create") {
-          const project = { id: crypto.randomUUID(), name: valid.name, slug: valid.slug };
-          next = [...current, project]; nextSelected = project.id;
-        } else if (dialog.project) {
-          next = current.map(project => project.id === dialog.project?.id ? { ...project, name: valid.name, slug: valid.slug } : project);
-        }
-      }
-      if (next !== current) writeProjects(window.localStorage, store.userId, next);
-      if (dialog.mode === "delete") {
-        const nativeDialog = projectDialog.current?.shadowRoot?.querySelector("uic-modal")?.shadowRoot?.querySelector("dialog");
-        nativeDialog?.addEventListener("close", () => {
-          void (async () => {
-            const currentSidebar = sidebar.current;
-            if (!currentSidebar) return;
-            await currentSidebar.updateComplete;
-            const row = currentSidebar.shadowRoot?.querySelector<LitElement>("uic-list-item");
-            if (row) await row.updateComplete;
-            const target = row?.shadowRoot?.querySelector<HTMLButtonElement>("button.label")
-              ?? currentSidebar.shadowRoot?.querySelector("footer uic-button")?.shadowRoot?.querySelector<HTMLButtonElement>("button");
-            target?.focus();
-          })();
-        }, { once: true });
-      }
-      setStore({ userId: store.userId, projects: next }); setSelectedId(nextSelected); setStorageError("");
-      if (dialog.mode === "create") setActiveTab("mine");
-      setDialog(null);
-    } catch { setStorageError("Unable to save local projects. Existing data was preserved."); submitting.current = false; }
-  };
 
-  // Register the Lit elements in the browser before rendering them.
-  useEffect(() => {
-    import("@nx-learning/shared-sections").then(() => {
-      setSidebarOpen(window.innerWidth >= 768);
-      setReady(true);
-    });
-  }, []);
-  const closeSidebar = () => {
-    setSidebarOpen(false);
-    // Return keyboard focus to the button that opens the sidebar.
-    navbar.current?.shadowRoot
-      ?.querySelector("uic-icon-button")
-      ?.shadowRoot?.querySelector("button")
-      ?.focus();
+  useEffect(() => { if (isLoaded && !isSignedIn) router.replace("/sign-in"); }, [isLoaded, isSignedIn, router]);
+  useEffect(() => { import("@nx-learning/shared-sections").then(() => { setSidebarOpen(window.innerWidth >= 768); setReady(true); }); }, []);
+  const clearProtected = () => { setStore(null); setSelectedId(null); setDialog(null); setPending(false); submitting.current = false; };
+  const endRejectedSession = async (id: string, rejectedSessionId: string) => {
+    setSignOutFailed(false);
+    try { await signOut({ sessionId: rejectedSessionId, redirectUrl: "/sign-in" }); }
+    catch { if (currentIdentity.current === id) setSignOutFailed(true); }
   };
-  if (!ready || !isLoaded || !isSignedIn) return null;
-  return (
-    <div style={{ height: "100dvh", display: "flex", flexDirection: "column" }}>
-      <Navbar
-        ref={navbar}
-        sidebarOpen={sidebarOpen}
-        onsidebar-toggle={() => setSidebarOpen((isOpen) => !isOpen)}
-      ><div slot="right"><UserButton /></div></Navbar>
-      <main
-        style={{
-          position: "relative",
-          flex: 1,
-          minHeight: 0,
-          background: "var(--bg-base)",
-          display: "block",
-          margin: 0,
-          padding: 0,
-          maxWidth: "none",
-        }}
-      >
-        <Sidebar
-          ref={sidebar}
-          isOpen={sidebarOpen}
-          activeTab={activeTab}
-          projects={projects}
-          selectedId={selectedId}
-          onproject-create={() => openDialog("create")}
-          onproject-select={(event: CustomEvent<{id: string}>) => setSelectedId(event.detail.id)}
-          onproject-edit={(event: CustomEvent<{id: string}>) => { const project = projects.find(item => item.id === event.detail.id); if (project) openDialog("rename", project); }}
-          onproject-delete={(event: CustomEvent<{id: string}>) => { const project = projects.find(item => item.id === event.detail.id); if (project) openDialog("delete", project); }}
-          onsidebar-close={closeSidebar}
-          ontab-change={(event: CustomEvent<{ value: SidebarTab }>) =>
-            setActiveTab(event.detail.value)
-          }
-        />
-        {storageError && <p role="alert" style={{ color: "var(--state-error)", padding: "var(--space-4)" }}>{storageError}</p>}
-        {store && store.userId === userId && <div style={{ height: "100%", display: "grid", placeItems: "center" }}>{selected ? <h1>{selected.name}</h1> : <EmptyState heading="No project selected"><Button slot="action" onClick={() => openDialog("create")}><Icon name="plus" size="sm" />Create Project</Button></EmptyState>}</div>}
-        <Dialog ref={projectDialog} open={!!dialog} mode={dialog?.mode ?? "create"} project={dialog?.project ?? null} projects={projects} storageError={storageError} onproject-cancel={() => setDialog(null)} onproject-submit={submit} />
-      </main>
-    </div>
-  );
+  const rejectSession = (id: string) => {
+    if (rejected.current === id || currentIdentity.current !== id || !sessionId) return;
+    rejected.current = id;
+    requests.current.forEach(controller => controller.abort()); requests.current.clear(); ++loadVersion.current;
+    clearProtected(); setLegacy(null); setRejectedIdentity(id);
+    void endRejectedSession(id, sessionId);
+  };
+  const client = () => new ProjectsApi(process.env.NEXT_PUBLIC_API_URL ?? "", () => getToken());
+  const load = async (id: string, retain = false): Promise<boolean> => {
+    const version = ++loadVersion.current;
+    const controller = new AbortController(); requests.current.add(controller);
+    setStore(previous => ({ identity: id, projects: retain && previous?.identity === id ? previous.projects : [], status: "loading" }));
+    try {
+      const list = await client().list(controller.signal);
+      if (currentIdentity.current !== id || version !== loadVersion.current || controller.signal.aborted) return false;
+      setStore({ identity: id, projects: list, status: "loaded" });
+      setSelectedId(previous => list.some(item => item.id === previous) ? previous : null);
+      return true;
+    } catch (error) {
+      if (currentIdentity.current !== id || version !== loadVersion.current || controller.signal.aborted) return false;
+      if (error instanceof ProjectsApiError && error.code === "UNAUTHORIZED") rejectSession(id);
+      else { setStore(previous => ({ identity: id, projects: retain && previous?.identity === id ? previous.projects : [], status: "error" })); setMessage("Unable to load projects. Retry to reconnect."); }
+      return false;
+    } finally { requests.current.delete(controller); }
+  };
+  useEffect(() => {
+    requests.current.forEach(controller => controller.abort()); requests.current.clear(); ++loadVersion.current;
+    clearProtected(); setMessage(""); setValidationError(""); setLegacy(null);
+    if (rejected.current !== identity) { rejected.current = ""; setRejectedIdentity(""); setSignOutFailed(false); }
+    if (!ready || !identity || !userId) return;
+    try { setLegacy({ identity, projects: readProjects(window.localStorage, userId), error: false }); }
+    catch { setLegacy({ identity, projects: null, error: true }); }
+    void load(identity);
+    return () => { requests.current.forEach(controller => controller.abort()); requests.current.clear(); ++loadVersion.current; };
+    // Identity determines the lifetime of all requests and protected state.
+  }, [ready, identity, userId]);
+  const openDialog = (mode: DialogState["mode"], project: ApiProject | null = null) => {
+    if (visible?.status !== "loaded" || submitting.current) return;
+    setMessage(""); setValidationError(""); setDialog({ mode, project });
+  };
+  const restoreDeleteFocus = () => {
+    const nativeDialog = projectDialog.current?.shadowRoot?.querySelector("uic-modal")?.shadowRoot?.querySelector("dialog");
+    nativeDialog?.addEventListener("close", () => { void (async () => {
+      const current = sidebar.current; if (!current) return;
+      await current.updateComplete;
+      const row = current.shadowRoot?.querySelector<LitElement>("uic-list-item"); if (row) await row.updateComplete;
+      const target = row?.shadowRoot?.querySelector<HTMLButtonElement>("button.label") ?? current.shadowRoot?.querySelector("footer uic-button")?.shadowRoot?.querySelector<HTMLButtonElement>("button");
+      target?.focus();
+    })(); }, { once: true });
+  };
+  const submit = async (event: CustomEvent<{ name: string; slug: string }>) => {
+    if (!dialog || !visible || visible.status !== "loaded" || submitting.current) return;
+    if (dialog.mode !== "delete") {
+      const result = validateProjectName(event.detail.name, projects, dialog.project?.id);
+      if (result.error || result.slug !== event.detail.slug) return;
+    }
+    const id = identity; const controller = new AbortController(); requests.current.add(controller);
+    submitting.current = true; setPending(true); setMessage(""); setValidationError(""); ++loadVersion.current;
+    try {
+      const api = client();
+      const result = dialog.mode === "create" ? await api.create(event.detail.name, controller.signal)
+        : dialog.mode === "rename" && dialog.project ? await api.rename(dialog.project.id, event.detail.name, controller.signal)
+        : dialog.project ? await api.delete(dialog.project.id, controller.signal) : null;
+      if (currentIdentity.current !== id || controller.signal.aborted) return;
+      if (dialog.mode === "delete" && dialog.project) {
+        restoreDeleteFocus();
+        setStore(previous => previous?.identity === id ? { ...previous, projects: previous.projects.filter(item => item.id !== dialog.project?.id) } : previous);
+        setSelectedId(previous => previous === dialog.project?.id ? null : previous);
+      } else if (result) {
+        setStore(previous => previous?.identity === id ? { ...previous, projects: dialog.mode === "create" ? [result, ...previous.projects].sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id)) : previous.projects.map(item => item.id === result.id ? result : item) } : previous);
+        if (dialog.mode === "create") { setSelectedId(result.id); setActiveTab("mine"); }
+      }
+      setDialog(null);
+    } catch (error) {
+      if (currentIdentity.current !== id || controller.signal.aborted) return;
+      const code = error instanceof ProjectsApiError ? error.code : "UNAVAILABLE";
+      if (code === "UNAUTHORIZED") rejectSession(id);
+      else if (code === "PROJECT_NOT_FOUND") { setMessage("This project is no longer available. Refreshing projects."); await load(id, true); setDialog(null); }
+      else if (code === "SLUG_CONFLICT") setValidationError("A project with this slug already exists.");
+      else if (code === "VALIDATION_ERROR" || code === "PAYLOAD_TOO_LARGE") setValidationError("Project name is invalid or too large.");
+      else { setMessage("The result is unknown. Refresh projects before retrying."); await load(id, true); }
+    } finally { requests.current.delete(controller); if (currentIdentity.current === id && !controller.signal.aborted) { submitting.current = false; setPending(false); } }
+  };
+  const exportLegacy = () => {
+    if (!legacy?.projects || legacy.identity !== identity) return;
+    const url = URL.createObjectURL(new Blob([JSON.stringify(legacy.projects, null, 2)], { type: "application/json" }));
+    const link = document.createElement("a"); link.href = url; link.download = "archloom-local-projects.json"; link.click(); URL.revokeObjectURL(url);
+  };
+  const closeSidebar = () => { setSidebarOpen(false); navbar.current?.shadowRoot?.querySelector("uic-icon-button")?.shadowRoot?.querySelector("button")?.focus(); };
+  if (!ready || !isLoaded || !isSignedIn || !identity) return null;
+  if (rejectedIdentity === identity) return <main><p role="alert">{signOutFailed ? "Unable to sign out. Please try again." : "Session expired. Signing out…"}</p>{signOutFailed && <Button onClick={() => { if (sessionId) void endRejectedSession(identity, sessionId); }}>Retry sign out</Button>}</main>;
+  return <div style={{ height: "100dvh", display: "flex", flexDirection: "column" }}>
+    <Navbar ref={navbar} sidebarOpen={sidebarOpen} onsidebar-toggle={() => setSidebarOpen(value => !value)}><div slot="right"><UserButton /></div></Navbar>
+    <main style={{ position: "relative", flex: 1, minHeight: 0, background: "var(--bg-base)", display: "block", margin: 0, padding: 0, maxWidth: "none" }}>
+      <Sidebar ref={sidebar} isOpen={sidebarOpen} activeTab={activeTab} projects={projects} selectedId={visible ? selectedId : null} loading={!visible || visible.status === "loading"} loadError={visible?.status === "error"} onproject-create={() => openDialog("create")} onproject-select={(event: CustomEvent<{ id: string }>) => setSelectedId(event.detail.id)} onproject-edit={(event: CustomEvent<{ id: string }>) => { const item = projects.find(project => project.id === event.detail.id); if (item) openDialog("rename", item); }} onproject-delete={(event: CustomEvent<{ id: string }>) => { const item = projects.find(project => project.id === event.detail.id); if (item) openDialog("delete", item); }} onsidebar-close={closeSidebar} ontab-change={(event: CustomEvent<{ value: SidebarTab }>) => setActiveTab(event.detail.value)} />
+      <div style={{ position: "absolute", top: 0, right: 0, padding: "var(--space-4)" }}>
+        {legacy?.identity === identity && (legacy.error ? <p role="alert">Local projects could not be read. Existing data was preserved.</p> : !!legacy.projects?.length && <p>Legacy projects are local-only and not synchronized. <Button onClick={exportLegacy}>Export JSON backup</Button></p>)}
+        {message && !dialog && <p role="alert">{message}</p>}
+        {visible?.status === "error" && <Button onClick={() => { setMessage(""); void load(identity, true); }}>Retry loading projects</Button>}
+      </div>
+      {visible?.status === "loading" && <p role="status">Loading projects…</p>}
+      {visible?.status === "loaded" && <div style={{ height: "100%", display: "grid", placeItems: "center" }}>{selected ? <h1>{selected.name}</h1> : <EmptyState heading="No project selected"><Button slot="action" onClick={() => openDialog("create")}><Icon name="plus" size="sm" />Create Project</Button></EmptyState>}</div>}
+      <Dialog ref={projectDialog} open={!!dialog && !!visible} mode={dialog?.mode ?? "create"} project={visible ? dialog?.project ?? null : null} projects={projects} storageError={message} validationError={validationError} pending={pending} blocked={visible?.status === "error"} onproject-retry={() => { setMessage(""); void load(identity, true); }} onproject-cancel={() => { if (!submitting.current) { setDialog(null); setMessage(""); } }} onproject-submit={submit} />
+    </main>
+  </div>;
 }

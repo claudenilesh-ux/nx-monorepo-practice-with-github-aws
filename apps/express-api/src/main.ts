@@ -6,8 +6,10 @@
 import express from "express";
 import * as path from "path";
 import { disconnectPrisma } from "./app/database/prisma";
+import { projectsRouter } from "./app/projects/projects.routes";
 
 const app = express();
+app.use("/api/projects", projectsRouter());
 
 app.use("/assets", express.static(path.join(__dirname, "assets")));
 

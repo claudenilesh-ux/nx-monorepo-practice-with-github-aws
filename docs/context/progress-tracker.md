@@ -3,10 +3,10 @@
 Update this file when a feature changes status. Keep one concise entry per feature; record only actual results and outstanding checks.
 
 ## Current Phase
-- Feature 04 — Remaining browser verification; Feature 05 complete.
+- Feature 07 — implementation in progress and live verification pending; Feature 06 security gates remain open.
 
 ## Current Goal
-- Complete Feature 04 authenticated browser and accessibility verification.
+- Verify Feature 07 against the local frontend, API and PostgreSQL; preserve Feature 06 pre-production gates.
 
 ## Completed Implementation
 
@@ -18,12 +18,17 @@ Update this file when a feature changes status. Keep one concise entry per featu
 
 ## In Progress
 
+- Feature 07: Authenticated Chrome checks passed for create, rename with stable UUID, reload persistence, duplicate validation, simulated load failure and retry, legacy preservation, and last-delete focus at 390px. Destructive-button contrast now passes at 5.41:1; delete-dialog Lighthouse accessibility is 100 at 390px and desktop. Simulated 400, 404, 409, 413, 500 and 503 responses and pending dismissal were checked. The editor now ends only the rejected Clerk session and blocks project state while sign-out is pending or fails; focused tests cover sign-out failure and stale 401 responses. Live 401 verification is blocked by browser approval availability. Sidebar footer sizing was hardened, but the original disappearance was not reproduced and post-change browser layout checks remain blocked. Cross-account checks remain blocked. Existing focused tests, lint, TypeScript and webpack build passed; default Turbopack build remained blocked by sandbox port binding.
+
+- Feature 06: Implemented — automated tests and available live API verification passed. Remaining live security checks blocked by unavailable fixtures. Mandatory before production: verify wrong-instance token rejection, non-session token rejection, untrusted authorized-party rejection, and cross-account isolation.
+
 - Feature 05A: PASS — configuration checks and production builds passed; Chrome observed signed-in editor access, sign-out and protected-route redirect. Compose loaded app-local settings; synthetic Docker context checks, private-file Git ignores, current Nx cache scan and Angular diff check passed.
 
 - Feature 04: deletion focus passed regression tests and authenticated desktop/390px browser checks. Mobile dialog accessibility: Lighthouse 100, no failed audits; Escape restores focus and no horizontal overflow. Live account switching remains unverified: no second account visible in the current Clerk session.
 
 ## Next Up
 
+- Complete Feature 07 sidebar and 401 browser verification and remove the feature-owned Sidebar Probe One project. Finish Feature 06 security checks before production.
 - Feature 04: Local Project Management — `docs/context/feature-specs/04-local-project-management.md`.
 - Future: Express API authentication, project ownership and frontend integration (separate specs).
 
@@ -58,7 +63,7 @@ Update this file when a feature changes status. Keep one concise entry per featu
 - Next.js is the only active Architecture Studio frontend; Angular is reserved for a separate future project and its existing contracts remain intact. Express remains available when required.
 - Shared SCSS design tokens; no duplicated component implementations or hardcoded theme colors.
 - Clerk owns authentication UI and sessions; frontend integrations stay outside shared Lit libraries.
-- Feature 04 uses browser localStorage scoped by Clerk user. Feature 05 adds a separate local PostgreSQL foundation; no frontend database integration yet.
+- Feature 04 legacy localStorage remains preserved and exportable. Feature 07 uses the owner-scoped API for active projects; live verification remains pending.
 - Private Express project APIs require server-side authentication and ownership checks before exposure.
 - Implement approved feature specs on dev; verify changes before PR to main.
 

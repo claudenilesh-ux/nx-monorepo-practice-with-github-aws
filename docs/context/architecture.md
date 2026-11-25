@@ -8,9 +8,9 @@
 - Shared SCSS tokens and Lucide icons provide the design system. Shared libraries remain framework-independent.
 - Express provides backend functionality when required. Private project APIs require server-side authentication and ownership checks.
 
-## Feature 04 storage
+## Feature 04 legacy storage
 
-Projects use versioned browser localStorage scoped by Clerk user ID. The application validates stored data and reports read or write failures without overwriting existing data. Storage is origin-local, not a security boundary; server persistence is deferred.
+Versioned browser localStorage remains preserved per Clerk user. Feature 07 reads validated legacy projects only for an explicit JSON backup; it does not import, overwrite or delete them.
 
 ## Integration and verification
 
@@ -24,4 +24,12 @@ Each app owns its private `.env.local` and tracked `.env.example`. Next.js uses 
 
 From the workspace root, copy `apps/express-api/.env.example` to `apps/express-api/.env.local` and replace placeholders. Start PostgreSQL with `docker compose --env-file apps/express-api/.env.local up -d --wait`; stop it with `docker compose --env-file apps/express-api/.env.local stop`. Run `npx prisma migrate status` and `npx prisma generate`; migrations remain under Express. Nx generates the client before Express build, test and typecheck. Use `RUN_DATABASE_TESTS=1 npx jest --config apps/express-api/jest.config.cts --runInBand` for synthetic database tests.
 
+## Feature 06 project API
+
+Express exposes owner-only project CRUD under `/api/projects`, using Clerk session Bearer verification, the existing Prisma client and shared project-name validation. Database mutations include the authenticated owner ID; collaborator membership does not grant access. CORS permits only the configured frontend origin, responses are not cached, and the Feature 07 editor uses the API. Configure the Express Clerk keys and CORS origin through its app-local configuration before starting the API. Real cross-account and complete token-negative verification remain pending.
+
 For future apps, create an app-local placeholder template and ignored local file, validate required values through `libs/config`, and use the framework's native loader or one app-owned loader. Process variables take precedence. Exclude private files from Git, Docker contexts and Nx inputs; hash build-time public configuration in cache inputs without printing values. Never put server values in shared browser modules.
+
+## Feature 07 frontend integration
+
+Next.js requests owner-scoped projects through a typed fetch client with per-request Clerk session tokens. The editor clears identity-scoped state and cancels stale requests; confirmed API responses drive mutations. Legacy browser projects remain local and can be exported. Live end-to-end verification remains pending.

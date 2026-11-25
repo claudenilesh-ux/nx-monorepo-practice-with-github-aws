@@ -35,7 +35,7 @@ export const uicButtonStyles = css`
     background: var(--accent-hover);
   }
 
-  button.destructive { background: var(--state-error); color: var(--text-primary); }
+  button.destructive { background: var(--state-error); color: var(--text-on-accent); }
 
   button.secondary {
     background: var(--bg-surface);

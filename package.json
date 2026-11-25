@@ -2,7 +2,9 @@
   "name": "@nx-learning/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "dev:archloom": "node tools/dev-archloom.cjs"
+  },
   "private": true,
   "devDependencies": {
     "@angular-devkit/core": "~22.2.0",
@@ -76,6 +78,7 @@
     "@angular/platform-browser-dynamic": "~22.2.0",
     "@angular/router": "~22.2.0",
     "@clerk/clerk-js": "^6.47.0",
+    "@clerk/express": "^2.1.98",
     "@clerk/nextjs": "^7.10.8",
     "@clerk/ui": "^1.45.0",
     "@prisma/adapter-pg": "7.10.0",
