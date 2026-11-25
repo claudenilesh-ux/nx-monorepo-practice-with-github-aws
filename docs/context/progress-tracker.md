@@ -18,7 +18,7 @@ Update this file when a feature changes status. Keep one concise entry per featu
 
 ## In Progress
 
-- Feature 07: Authenticated Chrome checks passed for create, rename with stable UUID, reload persistence, duplicate validation, simulated load failure and retry, legacy preservation, and last-delete focus at 390px. Destructive-button contrast now passes at 5.41:1; delete-dialog Lighthouse accessibility is 100 at 390px and desktop. Simulated 400, 404, 409, 413, 500 and 503 responses and pending dismissal were checked. The editor now ends only the rejected Clerk session and blocks project state while sign-out is pending or fails; focused tests cover sign-out failure and stale 401 responses. Live 401 verification is blocked by browser approval availability. Sidebar footer sizing was hardened, but the original disappearance was not reproduced and post-change browser layout checks remain blocked. Cross-account checks remain blocked. Existing focused tests, lint, TypeScript and webpack build passed; default Turbopack build remained blocked by sandbox port binding.
+- Feature 07: Authenticated Chrome checks passed for create, rename with stable UUID, reload persistence, duplicate validation, simulated load failure and retry, legacy preservation, and last-delete focus at 390px. Destructive-button contrast now passes at 5.41:1; delete-dialog Lighthouse accessibility is 100 at 390px and desktop. Simulated 400, 404, 409, 413, 500 and 503 responses and pending dismissal were checked. The editor now ends only the rejected Clerk session and blocks project state while sign-out is pending or fails; focused tests cover sign-out failure and stale 401 responses. Live 401 verification: an invalid token received API 401, ended the current Clerk session, and the protected editor redirected to a stable sign-in screen; after reauthentication the editor reopened and fetched the original projects with HTTP 200. Three test projects survived reload and were removed; at desktop and 390px the footer remained visible while a 30-row simulated list scrolled independently. Escape and deletion restored focus. Cross-account checks remain blocked. Existing focused tests, lint, TypeScript and webpack build passed; default Turbopack build remained blocked by sandbox port binding.
 
 - Feature 06: Implemented — automated tests and available live API verification passed. Remaining live security checks blocked by unavailable fixtures. Mandatory before production: verify wrong-instance token rejection, non-session token rejection, untrusted authorized-party rejection, and cross-account isolation.
 
@@ -28,7 +28,7 @@ Update this file when a feature changes status. Keep one concise entry per featu
 
 ## Next Up
 
-- Complete Feature 07 sidebar and 401 browser verification and remove the feature-owned Sidebar Probe One project. Finish Feature 06 security checks before production.
+- Complete blocked cross-account verification when a second existing account is available. Finish Feature 06 security checks before production.
 - Feature 04: Local Project Management — `docs/context/feature-specs/04-local-project-management.md`.
 - Future: Express API authentication, project ownership and frontend integration (separate specs).
 
