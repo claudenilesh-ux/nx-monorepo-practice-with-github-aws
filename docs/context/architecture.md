@@ -1,5 +1,7 @@
 # Architecture Context
 
+Feature 07A: Express uses a Prisma Postgres pooled runtime connection and matching direct CLI connection through a separate developer-managed cloud profile. Cloud is the default development startup; `--local` retains Docker PostgreSQL. Integration tests require an isolated loopback test database. Cloud and local data do not synchronize automatically.
+
 ## Boundaries
 
 - `apps/next-app/` is the only active Architecture Studio frontend. It owns browser registration, Clerk integration, editor state and persistence orchestration.

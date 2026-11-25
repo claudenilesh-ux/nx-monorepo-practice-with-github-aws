@@ -165,3 +165,11 @@ Rules:
 - Include browser screenshots or evidence when relevant.
 - Report any unapproved scope changes explicitly.
 - Do not commit, push or merge without approval.
+
+### Configuration File Protection
+
+- Private environment files and credentials are protected.
+- Git-tracked `.env.example` templates may be updated when explicitly required by an approved feature specification.
+- Never add actual secrets to configuration templates.
+- Missing developer-managed configuration must block only dependent implementation or verification, not independent work.
+- Report all outstanding configuration requirements together.

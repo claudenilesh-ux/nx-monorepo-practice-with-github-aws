@@ -37,10 +37,25 @@ function startApps(env) {
   if (stopping) return;
   console.log('Starting Next.js and Express. Press Ctrl+C to stop them.');
   start('nx', ['dev', 'next-app'], env);
-  start('nx', ['serve', 'express-api'], env);
+  start('nx', ['serve', 'express-api'], env.ARCHLOOM_DATABASE_PROFILE === 'cloud' ? { ...env, NX_LOAD_DOT_ENV_FILES: 'false' } : env);
 }
 const appEnv = { ...process.env };
-if (process.env.ARCHLOOM_SKIP_LOCAL_DATABASE === '1') {
+const args = process.argv.slice(2);
+if (args.some(arg => !['--local', '--cloud'].includes(arg)) || (args.includes('--local') && args.includes('--cloud'))) {
+  console.error('Choose either --local or --cloud.');
+  process.exit(1);
+}
+const cloud = args.includes('--cloud') || (!args.includes('--local') && process.env.ARCHLOOM_SKIP_LOCAL_DATABASE !== '1');
+appEnv.ARCHLOOM_DATABASE_PROFILE = cloud ? 'cloud' : 'local';
+if (cloud) {
+  process.env.ARCHLOOM_DATABASE_PROFILE = 'cloud';
+  require('@swc-node/register');
+  const { loadExpressLocal, validateDatabaseTarget } = require('../apps/express-api/src/app/config/load-local.ts');
+  loadExpressLocal();
+  try { validateDatabaseTarget('cloud', process.env.DATABASE_URL, process.env.DIRECT_URL); }
+  catch { console.error('Invalid cloud database configuration.'); process.exit(1); }
+}
+if (cloud || (process.env.ARCHLOOM_SKIP_LOCAL_DATABASE === '1' && !args.includes('--local'))) {
   startApps(appEnv);
 } else {
   require('@swc-node/register');

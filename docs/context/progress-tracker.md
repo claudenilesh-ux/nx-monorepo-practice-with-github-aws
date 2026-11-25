@@ -3,10 +3,10 @@
 Update this file when a feature changes status. Keep one concise entry per feature; record only actual results and outstanding checks.
 
 ## Current Phase
-- Feature 07 — implementation in progress and live verification pending; Feature 06 security gates remain open.
+- Feature 07A cloud integration verified; Feature 07 cross-account and Feature 06 security gates remain open.
 
 ## Current Goal
-- Verify Feature 07 against the local frontend, API and PostgreSQL; preserve Feature 06 pre-production gates.
+- Preserve Feature 07 cross-account and Feature 06 pre-production gates.
 
 ## Completed Implementation
 
@@ -14,6 +14,7 @@ Update this file when a feature changes status. Keep one concise entry per featu
 - Feature 01: Design System — Shared SCSS tokens, Lit UICs and Lucide icons implemented. Shadow DOM icon rendering and accessible tabs corrected. Focused tests, lint, type checks and browser checks passed.
 - Feature 02: Editor Layout — Shared editor navbar, floating project sidebar, tabs, empty states and reusable dialog pattern implemented in both apps. Responsive layout, sidebar controls and unchanged canvas bounds verified.
 - Feature 05: PostgreSQL 17 and Prisma 7 local database foundation, initial migration and reusable Express client implemented and verified.
+- Feature 07A: Free-plan Prisma Postgres cloud startup verified; restored records matched local source, migration status was current, and authenticated create/reload/rename/delete smoke passed. Local Docker mode and isolated test guard remain available; cloud and local writes do not synchronize.
 - Feature 03: Clerk Authentication — Clerk integrated with protected editor routes and native account UI. Next.js Clerk URLs are configured locally; sign-in and sign-up force redirects to the editor, and sign-out uses the configured destination. Next.js sign-in/sign-up screens use Archloom branding, the supplied split-screen visual reference and existing design tokens; sign-in copy matches the mock and responsive form layout was checked. Developer reports sign-in and sign-out working; remaining acceptance checks are listed below.
 
 ## In Progress
@@ -57,6 +58,7 @@ Update this file when a feature changes status. Keep one concise entry per featu
 
 ## Open Questions
 
+- Feature 07A: Previously observed monitoring-extension catalog mismatch remains unexplained; no extension was intentionally modified.
 - No unresolved Feature 04 requirements recorded; confirm any new decisions against the approved spec.
 - Complete the remaining Clerk acceptance checks before treating authentication as fully verified.
 
