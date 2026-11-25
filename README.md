@@ -6,6 +6,18 @@
 
 [Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
 
+## Run Archloom locally
+
+Start Docker Desktop and configure the existing app-local settings, then run from the workspace root:
+
+```sh
+npm run dev:archloom
+```
+
+The command waits for local PostgreSQL to become healthy, then starts the Next.js editor at http://localhost:3000/editor and Express at http://localhost:3001. Press Ctrl+C to stop both application processes. PostgreSQL remains running and its data volume is preserved.
+
+To use an already configured external PostgreSQL service, set `ARCHLOOM_SKIP_LOCAL_DATABASE=1` when running the command. Ensure the existing Express database configuration points to that service; the command does not provision it.
+
 ## Run tasks
 
 To run tasks with Nx use:
@@ -172,3 +184,5 @@ If Next.js does not have a project.json but has its own package.json, add this i
 "nx": {
 "implicitDependencies": ["design-tokens"]
 }
+
+npm run dev:archloom

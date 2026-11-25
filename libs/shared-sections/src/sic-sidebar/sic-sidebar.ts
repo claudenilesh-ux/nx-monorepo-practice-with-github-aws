@@ -10,6 +10,8 @@ export class SicSidebar extends LitElement {
     activeTab: { type: String },
     projects: { attribute: false },
     selectedId: { attribute: false },
+    loading: { type: Boolean },
+    loadError: { type: Boolean },
   };
 
   static override styles = css`
@@ -47,11 +49,12 @@ export class SicSidebar extends LitElement {
       flex-direction: column;
       flex: 1;
       min-height: 0;
+      overflow: hidden;
       padding: 0 var(--space-3);
     }
     uic-scroll-area { height: 100%; min-height: 0; }
     uic-empty-state { padding: var(--space-4); }
-    footer { padding: var(--space-4); }
+    footer { flex: 0 0 auto; padding: var(--space-4); }
     @media (prefers-reduced-motion: reduce) {
       aside { transition: none; }
     }
@@ -61,6 +64,8 @@ export class SicSidebar extends LitElement {
   declare activeTab: SidebarTab;
   declare projects: Project[];
   declare selectedId: string | null;
+  declare loading: boolean;
+  declare loadError: boolean;
 
   private readonly items = [
     { id: 'mine', label: 'My Projects' },
@@ -73,6 +78,8 @@ export class SicSidebar extends LitElement {
     this.activeTab = 'mine';
     this.projects = [];
     this.selectedId = null;
+    this.loading = false;
+    this.loadError = false;
   }
 
   private emit(name: string) {
@@ -124,7 +131,7 @@ export class SicSidebar extends LitElement {
           @uic-change=${this.tabChange}
         >
           <uic-scroll-area slot="panel-mine">
-            ${this.projects.length ? this.projects.map(project => html`
+            ${this.loading ? html`<p role="status">Loading projects…</p>` : this.loadError ? html`<p>Projects could not be loaded.</p>` : this.projects.length ? this.projects.map(project => html`
               <uic-list-item label=${project.name} secondary=${project.slug} ?selected=${project.id === this.selectedId}
                 @uic-select=${(event: Event) => this.projectAction(event, 'project-select', project.id)}
                 @uic-edit=${(event: Event) => this.projectAction(event, 'project-edit', project.id)}
@@ -137,7 +144,7 @@ export class SicSidebar extends LitElement {
         </uic-tabs>
 
         <footer>
-          <uic-button full-width @click=${() => this.emit('project-create')}>
+          <uic-button full-width ?disabled=${this.loading || this.loadError} @click=${() => this.emit('project-create')}>
             <uic-icon name="plus" size="sm"></uic-icon>
             New Project
           </uic-button>

@@ -2,7 +2,9 @@
   "name": "@nx-learning/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "dev:archloom": "node tools/dev-archloom.cjs"
+  },
   "private": true,
   "devDependencies": {
     "@angular-devkit/core": "~22.2.0",

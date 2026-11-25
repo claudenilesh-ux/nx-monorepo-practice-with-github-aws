@@ -20,3 +20,19 @@ it('renders project rows and forwards actions without selecting', async () => {
   expect(selected).toBe(0);
   sidebar.remove();
 });
+
+it('keeps the create action available after selecting among many projects', async () => {
+  const sidebar = document.createElement('sic-sidebar') as SicSidebar;
+  sidebar.isOpen = true;
+  sidebar.projects = Array.from({ length: 30 }, (_, index) => ({ id: String(index), name: `Project ${index}`, slug: `project-${index}` }));
+  sidebar.selectedId = '0';
+  document.body.append(sidebar);
+  await sidebar.updateComplete;
+  const button = sidebar.shadowRoot?.querySelector<HTMLElement>('footer uic-button');
+  let creates = 0;
+  sidebar.addEventListener('project-create', () => creates++);
+  expect(button?.hasAttribute('disabled')).toBe(false);
+  button?.click();
+  expect(creates).toBe(1);
+  sidebar.remove();
+});
