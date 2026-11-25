@@ -18,7 +18,7 @@ Update this file when a feature changes status. Keep one concise entry per featu
 
 ## In Progress
 
-- Feature 04: Next.js local project management implemented. Deletion focus fix passes focused tests; authenticated desktop and mobile browser verification is pending.
+- Feature 04: Next.js local project management implemented. Mutations re-read stored projects before validation and writing; focused cross-tab tests pass. Deletion focus fix passes focused tests; authenticated desktop and mobile browser verification is pending.
 
 ## Next Up
 
