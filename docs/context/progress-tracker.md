@@ -3,10 +3,10 @@
 Update this file when a feature changes status. Keep one concise entry per feature; record only actual results and outstanding checks.
 
 ## Current Phase
-- Feature 04 — Remaining browser verification; Feature 05 complete.
+- Feature 06 — API implementation and remaining security verification; Feature 05 complete.
 
 ## Current Goal
-- Complete Feature 04 authenticated browser and accessibility verification.
+- Complete Feature 06 token-negative and cross-account verification.
 
 ## Completed Implementation
 
@@ -18,12 +18,15 @@ Update this file when a feature changes status. Keep one concise entry per featu
 
 ## In Progress
 
+- Feature 06: Implemented — automated tests and available live API verification passed. Remaining live security checks blocked by unavailable fixtures. Mandatory before production: verify wrong-instance token rejection, non-session token rejection, untrusted authorized-party rejection, and cross-account isolation.
+
 - Feature 05A: PASS — configuration checks and production builds passed; Chrome observed signed-in editor access, sign-out and protected-route redirect. Compose loaded app-local settings; synthetic Docker context checks, private-file Git ignores, current Nx cache scan and Angular diff check passed.
 
 - Feature 04: deletion focus passed regression tests and authenticated desktop/390px browser checks. Mobile dialog accessibility: Lighthouse 100, no failed audits; Escape restores focus and no horizontal overflow. Live account switching remains unverified: no second account visible in the current Clerk session.
 
 ## Next Up
 
+- Finish Feature 06 verification before Feature 07.
 - Feature 04: Local Project Management — `docs/context/feature-specs/04-local-project-management.md`.
 - Future: Express API authentication, project ownership and frontend integration (separate specs).
 

@@ -24,4 +24,8 @@ Each app owns its private `.env.local` and tracked `.env.example`. Next.js uses 
 
 From the workspace root, copy `apps/express-api/.env.example` to `apps/express-api/.env.local` and replace placeholders. Start PostgreSQL with `docker compose --env-file apps/express-api/.env.local up -d --wait`; stop it with `docker compose --env-file apps/express-api/.env.local stop`. Run `npx prisma migrate status` and `npx prisma generate`; migrations remain under Express. Nx generates the client before Express build, test and typecheck. Use `RUN_DATABASE_TESTS=1 npx jest --config apps/express-api/jest.config.cts --runInBand` for synthetic database tests.
 
+## Feature 06 project API
+
+Express exposes owner-only project CRUD under `/api/projects`, using Clerk session Bearer verification, the existing Prisma client and shared project-name validation. Database mutations include the authenticated owner ID; collaborator membership does not grant access. CORS permits only the configured frontend origin, responses are not cached, and Next.js continues to use localStorage. Configure the Express Clerk keys and CORS origin through its app-local configuration before starting the API. Real cross-account and complete token-negative verification remain pending.
+
 For future apps, create an app-local placeholder template and ignored local file, validate required values through `libs/config`, and use the framework's native loader or one app-owned loader. Process variables take precedence. Exclude private files from Git, Docker contexts and Nx inputs; hash build-time public configuration in cache inputs without printing values. Never put server values in shared browser modules.
