@@ -3,8 +3,10 @@ import {
   CUSTOM_ELEMENTS_SCHEMA,
   ElementRef,
   ViewChild,
+  AfterViewInit, OnDestroy, inject,
 } from "@angular/core";
 import "@nx-learning/shared-sections";
+import { ClerkSession } from "../clerk/clerk-session";
 import type { SidebarTab } from "@nx-learning/shared-sections";
 
 @Component({
@@ -15,7 +17,7 @@ import type { SidebarTab } from "@nx-learning/shared-sections";
       #navbar
       [sidebarOpen]="sidebarOpen"
       (sidebar-toggle)="sidebarOpen = !sidebarOpen"
-    ></sic-editor-navbar>
+    ><div slot="right" #userButton></div></sic-editor-navbar>
     <main class="workspace">
       <sic-sidebar
         [isOpen]="sidebarOpen"
@@ -41,7 +43,18 @@ import type { SidebarTab } from "@nx-learning/shared-sections";
     `,
   ],
 })
-export class Editor {
+export class Editor implements AfterViewInit, OnDestroy {
+  @ViewChild("userButton", { static: true }) userButton!: ElementRef<HTMLDivElement>;
+  private session = inject(ClerkSession);
+  private destroyed = false;
+  async ngAfterViewInit() {
+    const clerk = await this.session.initialize();
+    if (!this.destroyed) clerk.mountUserButton(this.userButton.nativeElement);
+  }
+  ngOnDestroy() {
+    this.destroyed = true;
+    this.session.clerk?.unmountUserButton(this.userButton.nativeElement);
+  }
   @ViewChild("navbar", { read: ElementRef }) navbar?: ElementRef<HTMLElement>;
   sidebarOpen = typeof window !== "undefined" && window.innerWidth >= 768;
   activeTab: SidebarTab = "mine";

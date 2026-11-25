@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { UserButton, useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import type { DetailedHTMLProps, HTMLAttributes } from "react";
 import type { SidebarTab } from "@nx-learning/shared-sections";
 
@@ -18,6 +20,11 @@ const Sidebar = "sic-sidebar" as React.ElementType<
 >;
 
 export default function Editor() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const router = useRouter();
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) router.replace("/sign-in");
+  }, [isLoaded, isSignedIn, router]);
   const [ready, setReady] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<SidebarTab>("mine");
@@ -38,14 +45,14 @@ export default function Editor() {
       ?.shadowRoot?.querySelector("button")
       ?.focus();
   };
-  if (!ready) return null;
+  if (!ready || !isLoaded || !isSignedIn) return null;
   return (
     <div style={{ height: "100dvh", display: "flex", flexDirection: "column" }}>
       <Navbar
         ref={navbar}
         sidebarOpen={sidebarOpen}
         onsidebar-toggle={() => setSidebarOpen((isOpen) => !isOpen)}
-      />
+      ><div slot="right"><UserButton /></div></Navbar>
       <main
         style={{
           position: "relative",

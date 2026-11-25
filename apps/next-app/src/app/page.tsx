@@ -1,10 +1,7 @@
-import ButtonPreview from "./button-preview";
+import { auth } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
 
-export default function Index() {
-  /*
-   * Replace the elements below with your own.
-   *
-   * Note: The corresponding styles are in the ./index.scss file.
-   */
-  return <ButtonPreview />;
+export default async function Home() {
+  const { userId } = await auth();
+  return redirect(userId ? '/editor' : '/sign-in');
 }
