@@ -1,7 +1,7 @@
 import { LitElement, html } from "lit";
 import { uicButtonStyles } from "./uic-button.styles";
 
-export type ButtonVariant = "primary" | "secondary";
+export type ButtonVariant = "primary" | "secondary" | "destructive";
 
 export class UicButton extends LitElement {
   static override properties = {
@@ -26,7 +26,7 @@ export class UicButton extends LitElement {
     return html`
       <button
         type="button"
-        class=${this.variant === "secondary" ? "secondary" : "primary"}
+        class=${this.variant}
         ?disabled=${this.disabled}
       >
         <slot></slot>

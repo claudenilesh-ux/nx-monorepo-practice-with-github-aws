@@ -1,5 +1,6 @@
 import { LitElement, css, html } from 'lit';
 import '@nx-learning/shared-ui';
+import type { Project } from '@nx-learning/project-data';
 
 export type SidebarTab = 'mine' | 'shared';
 
@@ -7,6 +8,8 @@ export class SicSidebar extends LitElement {
   static override properties = {
     isOpen: { type: Boolean },
     activeTab: { type: String },
+    projects: { attribute: false },
+    selectedId: { attribute: false },
   };
 
   static override styles = css`
@@ -56,6 +59,8 @@ export class SicSidebar extends LitElement {
 
   declare isOpen: boolean;
   declare activeTab: SidebarTab;
+  declare projects: Project[];
+  declare selectedId: string | null;
 
   private readonly items = [
     { id: 'mine', label: 'My Projects' },
@@ -66,10 +71,17 @@ export class SicSidebar extends LitElement {
     super();
     this.isOpen = false;
     this.activeTab = 'mine';
+    this.projects = [];
+    this.selectedId = null;
   }
 
   private emit(name: string) {
     this.dispatchEvent(new CustomEvent(name, { bubbles: true, composed: true }));
+  }
+
+  private projectAction(event: Event, action: string, id: string) {
+    event.stopPropagation();
+    this.dispatchEvent(new CustomEvent(action, { detail: { id }, bubbles: true, composed: true }));
   }
 
   private tabChange(event: CustomEvent<{ value: SidebarTab }>) {
@@ -112,7 +124,12 @@ export class SicSidebar extends LitElement {
           @uic-change=${this.tabChange}
         >
           <uic-scroll-area slot="panel-mine">
-            <uic-empty-state heading="No projects yet"></uic-empty-state>
+            ${this.projects.length ? this.projects.map(project => html`
+              <uic-list-item label=${project.name} secondary=${project.slug} ?selected=${project.id === this.selectedId}
+                @uic-select=${(event: Event) => this.projectAction(event, 'project-select', project.id)}
+                @uic-edit=${(event: Event) => this.projectAction(event, 'project-edit', project.id)}
+                @uic-delete=${(event: Event) => this.projectAction(event, 'project-delete', project.id)}></uic-list-item>
+            `) : html`<uic-empty-state heading="No projects yet"></uic-empty-state>`}
           </uic-scroll-area>
           <uic-scroll-area slot="panel-shared">
             <uic-empty-state heading="No shared projects yet"></uic-empty-state>

@@ -13,7 +13,7 @@ Spec-driven incremental development. Read all six context documents before work.
 
 ## When to split work
 
-Separate workspace generation, design tokens, individual UICs, SIC composition, each frontend integration, API contract/storage, frontend API integration and deployment. If a unit cannot be verified quickly, split it. A shared component may be integrated into both frontends within its verification unit.
+Separate workspace generation, design tokens, individual UICs, SIC composition, each frontend integration, API contract/storage, frontend API integration and deployment. If a unit cannot be verified quickly, split it. Integrate product features in Next.js only; preserve existing Angular component contracts.
 
 ## Protected boundaries
 
@@ -23,7 +23,7 @@ Do not edit node_modules, generated output, lockfiles manually, unrelated applic
 
 - Relevant acceptance criteria verified; no architecture invariant violated.
 - Run focused local tests and applicable Nx builds. Discover actual target names first. For full baseline verification run `npx nx run-many -t build` after apps exist; use affected tasks with explicit correct Git base/head when appropriate.
-- Browser-accessible changes: use Chrome DevTools MCP to test real Angular `http://localhost:4200/editor` and Next.js `http://localhost:3000/editor` when available; inspect console, errors, network, DOM, and capture meaningful screenshots. API target: `http://localhost:3001/api/health` and relevant project endpoints. Check desktop and 390px viewport for UI. If MCP or another target is unavailable, report NOT RUN/BLOCKED; do not claim a pass. Before editor routes exist, use actual generated root routes.
+- Browser-accessible changes: use Chrome DevTools MCP to test Next.js `http://localhost:3000/editor` when available; inspect console, errors, network, DOM, and capture meaningful screenshots. API target: `http://localhost:3001/api/health` and relevant project endpoints. Check desktop and 390px viewport for UI. Run relevant shared-library tests when shared components change. If MCP or another target is unavailable, report NOT RUN/BLOCKED; do not claim a pass. Before editor routes exist, use actual generated root routes.
 - Update tracker with real evidence, exact commands, PASS/FAIL/NOT RUN, and next unit. Keep specs synchronized only with approved decisions.
 
 ## Final report
@@ -119,3 +119,49 @@ Never mark an unverified requirement as PASS.
 - Keep detailed logs, command outputs, screenshots and file-level changes in implementation reports or pull requests.
 - Never mark unverified functionality as PASS.
 - Update Current Phase, Current Goal, In Progress and Next Up after every feature.
+
+## Final Implementation Report
+
+After completing any feature, bug fix or refactoring task, provide a concise report using the following format:
+
+### Status
+
+COMPLETE / PARTIAL / BLOCKED / FAILED
+
+### Files Created/Modified
+
+- `relative/file/path.ts` — One short sentence explaining the actual change.
+
+### Verification
+
+- TypeScript — PASS / FAIL / NOT RUN
+- ESLint — PASS / FAIL / NOT RUN
+- Unit tests — PASS / FAIL / NOT RUN (include test count)
+- Production build — PASS / FAIL / NOT RUN
+- Chrome DevTools MCP — PASS / FAIL / NOT RUN (include tested URL and observed functionality)
+- Git diff check — PASS / FAIL / NOT RUN
+
+### Notable Discoveries
+
+Mention important technical findings, architectural decisions or deviations from the specification, if any.
+
+### Remaining Issues
+
+List unresolved blockers, unrelated failures or incomplete requirements. If none, state "None."
+
+### Documentation
+
+Confirm that the progress tracker has been updated.
+
+Rules:
+
+- Keep the report concise and factual.
+- Provide clickable repository-relative file references where supported.
+- Include every created, modified or deleted file.
+- Describe actual changes, not intended changes.
+- Never claim PASS without verification.
+- Do not repeat the feature specification.
+- Do not include full source code, verbose command logs or unrelated information.
+- Include browser screenshots or evidence when relevant.
+- Report any unapproved scope changes explicitly.
+- Do not commit, push or merge without approval.
