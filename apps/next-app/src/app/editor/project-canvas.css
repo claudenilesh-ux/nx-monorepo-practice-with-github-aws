@@ -14,3 +14,9 @@
 @media (max-width: 767px) { .project-canvas-controls { flex-direction: column; } }
 .component-toggle { position: absolute; z-index: 2; top: var(--space-4); right: var(--space-4); }
 .component-panel { position: absolute; z-index: 3; top: 0; right: 0; bottom: 0; width: min(100%, calc(var(--sidebar-width) + var(--space-8))); }
+.architecture-node .react-flow__handle { width: var(--space-3); height: var(--space-3); background: var(--accent-primary); border: var(--border-width) solid var(--text-primary); }
+.project-canvas .react-flow__edge-path, .project-canvas .react-flow__connection-path { stroke: var(--accent-primary); stroke-width: var(--focus-width); }
+.project-canvas .react-flow__edge.selected .react-flow__edge-path, .project-canvas .react-flow__edge:focus-visible .react-flow__edge-path { stroke: var(--text-primary); }
+.connect-panel { position: absolute; z-index: 4; right: var(--space-4); bottom: var(--space-8); display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3); background: var(--bg-surface); border: var(--border-width) solid var(--border-default); border-radius: var(--radius-md); max-width: calc(100% - 2 * var(--space-4)); }
+.connect-panel label { display: flex; flex-direction: column; color: var(--text-primary); }
+.connect-panel select { max-width: 100%; color: var(--text-primary); background: var(--bg-surface); }
