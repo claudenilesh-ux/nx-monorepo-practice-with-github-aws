@@ -84,3 +84,31 @@ Update this file when a feature changes status. Keep one concise entry per featu
 - Latest recorded versions: Nx 24.0.6, Angular 22.2.7, Next.js 16.4.6, Lit 3.3.3.
 - Agent environment previously restricted Nx sockets and Next.js build ports. Both frontend builds later passed outside the sandbox; no permanent Nx restrictions were disabled.
 - Keep detailed test output and screenshots in implementation reports or PRs, not in this tracker.
+
+## Feature 11 — Node connections (implementation in progress, 2026-11-26)
+
+Approved contract: `docs/context/feature-specs/11-node-connections.md`. Changed `apps/next-app/src/app/editor/project-canvas.tsx`, `project-canvas.css`, `apps/next-app/specs/project-canvas.spec.tsx`, and this tracker. Existing untracked specification preserved. React Flow 13.0.3 owns handles and edge geometry; canvas owns temporary edge state and a keyboard Connect form. No new dependency, diagram persistence, API or backend changes.
+
+- D1 BLOCKED: Handles, native connect callbacks and keyboard control implemented; real drag, click/tap and keyboard browser verification unavailable.
+- D2 BLOCKED: Expected invalid/self/duplicate rejection and reverse/cycle support. Mock tests observed self/duplicate rejection, reverse direction and rapid native duplicate rejection; cycles, stale callbacks and wrong handles lack focused evidence.
+- D3 BLOCKED: Expected directional anchors, selection and reset. TypeScript/build pass; real geometry, focus, edge selection and movement not verified.
+- D4 BLOCKED: Mock test observed incident edge removal after node deletion; edge deletion, unrelated edge preservation, input guards and interrupted gesture recovery need further evidence.
+- D5 BLOCKED: Existing identity/project keyed canvas boundary retained, with temporary edge state; actual lifecycle and network verification not run.
+- D6 BLOCKED: `npx tsc --noEmit -p apps/next-app/tsconfig.json` PASS; `NX_DAEMON=false NX_ISOLATE_PLUGINS=false npx nx lint next-app` PASS; focused Nx Jest PASS (eight tests), direct Jest from `apps/next-app` PASS (eight tests). `npx next build --webpack` from `apps/next-app` PASS; `git diff --check` PASS. Chrome DevTools MCP: port 3000 refused connection; `npm run dev:archloom -- --local` failed because Docker socket access was denied, so no browser interaction, screenshots, console or network evidence. No synthetic input claimed as physical proof.
+- D7 BLOCKED: Scope inspection shows no dependency/backend/Angular/Liveblocks changes; full acceptance and verification remain open. Feature 10 pointer movement/interruption, physical touch/panel isolation, cross-account/identity, token gates, Turbopack restriction and prior monitoring discrepancy remain open.
+
+Continued development only; Feature 11 is not acceptance-closed or production-ready. Remaining tests include native gestures, accessible edge deletion, stale scope and cancellation, cycles, unrelated-edge preservation, lifecycle, viewport geometry and 390px browser checks.
+
+### Feature 11 browser follow-up — 2026-11-26
+
+Chrome DevTools MCP reached the manually started frontend and an existing authorized project. Project-list GET returned 200; diagram interactions produced no diagram write in the inspected fetch/XHR list. The backend answered on port 3001; `/api/health` and `/health` returned 404, so these requests do not establish database profile. Docker socket inspection was denied; local database profile was not independently confirmed. Console had no errors in the inspected workspace; Lit development mode, Clerk development mode and a preload warning appeared.
+
+- D1 BLOCKED: Desktop native drag created EC2 → PostgreSQL and Frontend → S3; the Connect form created Frontend → EC2. Click-to-connect and complete keyboard-only activation remain unverified. Mobile emulation used clicks, not physical touch.
+- D2 BLOCKED: The form disabled self and duplicate pairs and created the reverse pair. Other invalid handles, stale callbacks, cycles and interrupted gestures remain unverified in browser.
+- D3 BLOCKED: Screenshot showed arrowheads at targets. After keyboard-moving EC2 by 5 pixels, its incoming and outgoing SVG paths changed by 5 pixels at the EC2 endpoint while the unrelated path remained unchanged. Panned 25%/100%/200% geometry, reset and single-selection coverage remain incomplete.
+- D4 BLOCKED: Delete on a focused edge removed only that edge; deleting EC2 removed its incoming and outgoing edges and preserved Frontend → S3. At 390px, Backspace/Delete in catalog search preserved two nodes and one edge. Interrupted gesture recovery remains open.
+- D5 BLOCKED: Switching between existing owned projects and returning yielded an empty graph; reload of a two-node/two-edge graph yielded zero nodes and edges. Signing out with a node present redirected to sign-in; sign-out with an edge present and access-loss behavior remain unverified. No project/database records were created or modified.
+- D6 BLOCKED: Desktop screenshot `/private/tmp/archloom-feature11-desktop.png` shows the connected graph; mobile screenshot `/private/tmp/archloom-feature11-mobile.png` shows a connected pair at 390px. Both panels opened separately; mobile Connect form created an edge and document scroll width equaled viewport width. Full mobile gesture/visible-edge deletion, all zoom levels, runtime network failure inspection and physical touch remain open. Prior passing automated checks were not rerun because no production code changed.
+- D7 BLOCKED: No production code changes in this follow-up; existing untracked spec and other workspace changes preserved. Feature 10 pointer movement/interruption, physical touch/panel isolation, cross-account and token gates, Turbopack restriction and monitoring discrepancy remain open. A successful native connection drag does not prove node drag movement or physical touch.
+
+Recommendation: ready for continued development with these gates open; not acceptance-closed or production-ready. Smallest manual follow-up: exercise click-to-connect and interruption, edge anchors under panned 25%/100%/200%, reset, mobile touch/visible deletion, sign-out with an edge and access loss; inspect console/network and verify the intended local database profile without revealing credentials.

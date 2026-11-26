@@ -1,6 +1,6 @@
 'use client';
 import { useCallback, useEffect, useRef, useState, type DetailedHTMLProps, type HTMLAttributes } from 'react';
-import { ReactFlow, Background, BackgroundVariant, useNodesState, type Node, type NodeProps, type ReactFlowInstance } from '@xyflow/react';
+import { ReactFlow, Background, BackgroundVariant, Handle, Position, MarkerType, useNodesState, useEdgesState, type Connection, type Edge, type Node, type NodeProps, type ReactFlowInstance } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './project-canvas.css';
 import { componentCatalog } from './component-catalog';
@@ -15,12 +15,39 @@ const initial = { x: 0, y: 0, zoom: 1 };
 const mime = 'application/x-archloom-component';
 function ArchitectureNode({ data }: NodeProps<FlowNode>) {
   const entry = componentCatalog.find(item => item.id === data.componentId);
-  return entry ? <div className="architecture-node"><Icon name={entry.icon} aria-hidden="true" /><span>{entry.label}</span></div> : null;
+  return entry ? <div className="architecture-node"><Handle type="target" position={Position.Top} id="in" aria-label="Incoming connection" /><Handle type="source" position={Position.Bottom} id="out" aria-label="Outgoing connection" /><Icon name={entry.icon} aria-hidden="true" /><span>{entry.label}</span></div> : null;
 }
 const nodeTypes = { architecture: ArchitectureNode };
 
 export default function ProjectCanvas() {
   const [nodes, setNodes, changes] = useNodesState<FlowNode>([]);
+  const [edges, setEdges, edgeChanges] = useEdgesState<Edge>([]);
+  const [connectOpen, setConnectOpen] = useState(false);
+  const [source, setSource] = useState('');
+  const [target, setTarget] = useState('');
+  const connectToggle = useRef<HTMLElement>(null);
+  const nodesRef = useRef(nodes);
+  const edgesRef = useRef(edges);
+  const mounted = useRef(true);
+  nodesRef.current = nodes;
+  edgesRef.current = edges;
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  const valid = useCallback((connection: Connection | Edge) => {
+    const { source, target, sourceHandle, targetHandle } = connection;
+    return !!source && !!target && source !== target && sourceHandle === 'out' && targetHandle === 'in' &&
+      nodesRef.current.some(node => node.id === source) && nodesRef.current.some(node => node.id === target) &&
+      !edgesRef.current.some(edge => edge.source === source && edge.target === target);
+  }, []);
+  const commit = useCallback((connection: Connection) => {
+    if (!mounted.current || !valid(connection)) return;
+    const edge: Edge = { ...connection, id: crypto.randomUUID(), type: 'smoothstep', markerEnd: { type: MarkerType.ArrowClosed, color: 'var(--accent-primary)' }, selected: false };
+    edgesRef.current = [...edgesRef.current, edge];
+    setEdges(edgesRef.current);
+  }, [setEdges, valid]);
+  const closeConnect = () => {
+    setConnectOpen(false); setSource(''); setTarget('');
+    connectToggle.current?.shadowRoot?.querySelector<HTMLButtonElement>('button')?.focus();
+  };
   const [view, setView] = useState(initial);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [message, setMessage] = useState('');
@@ -33,6 +60,7 @@ export default function ProjectCanvas() {
   const pending = useRef<string | null>(null);
   const pendingFocus = useRef<string | null>(null);
   const selected = nodes.find(node => node.selected);
+  const selectedEdge = edges.find(edge => edge.selected);
   const closeLibrary = useCallback(() => {
     activeDrag.current = null;
     setLibraryOpen(false);
@@ -44,6 +72,7 @@ export default function ProjectCanvas() {
     if (!Number.isFinite(position.x) || !Number.isFinite(position.y)) return;
     const nodeId = crypto.randomUUID();
     pendingFocus.current = nodeId;
+    setEdges(previous => previous.map(edge => ({ ...edge, selected: false })));
     setNodes(previous => [...previous.map(node => ({ ...node, selected: false })), { id: nodeId, type: 'architecture', position, data: { componentId: id }, selected: true, ariaLabel: `${componentCatalog.find(item => item.id === id)?.label} ${nodeId}` }]);
     setMessage('');
   }, []);
@@ -101,8 +130,16 @@ export default function ProjectCanvas() {
     void flow.current.setViewport({ zoom: next, x: width / 2 - (width / 2 - previous.x) * ratio, y: height / 2 - (height / 2 - previous.y) * ratio });
   };
   const remove = () => {
-    if (!selected) return;
-    setNodes(previous => previous.filter(node => node.id !== selected.id));
+    if (selected) {
+      nodesRef.current = nodesRef.current.filter(node => node.id !== selected.id);
+      edgesRef.current = edgesRef.current.filter(edge => edge.source !== selected.id && edge.target !== selected.id);
+      setNodes(nodesRef.current); setEdges(edgesRef.current);
+      if (source === selected.id) setSource('');
+      if (target === selected.id) setTarget('');
+    } else if (selectedEdge) {
+      edgesRef.current = edgesRef.current.filter(edge => edge.id !== selectedEdge.id);
+      setEdges(edgesRef.current);
+    } else return;
     canvas.current?.focus();
   };
   return <div className="project-canvas-wrap">
@@ -113,23 +150,30 @@ export default function ProjectCanvas() {
           void flow.current.setViewport({ ...v, x: v.x + (event.key === 'ArrowRight' ? 20 : event.key === 'ArrowLeft' ? -20 : 0), y: v.y + (event.key === 'ArrowDown' ? 20 : event.key === 'ArrowUp' ? -20 : 0) });
         }
         const target = event.target as HTMLElement;
-        if ((event.key === 'Delete' || event.key === 'Backspace') && selected && target.closest('.react-flow__node')?.getAttribute('data-id') === selected.id) { event.preventDefault(); remove(); }
-        if (event.key === 'Escape' && selected) setNodes(previous => previous.map(node => ({ ...node, selected: false })));
+        if ((event.key === 'Delete' || event.key === 'Backspace') && !target.closest('input, textarea, select, [contenteditable=true]') && ((selected && target.closest('.react-flow__node')?.getAttribute('data-id') === selected.id) || (selectedEdge && target.closest('.react-flow__edge')?.getAttribute('data-id') === selectedEdge.id))) { event.preventDefault(); remove(); }
+        if (event.key === 'Escape') { setNodes(previous => previous.map(node => ({ ...node, selected: false }))); setEdges(previous => previous.map(edge => ({ ...edge, selected: false }))); }
       }}
       onDragOver={event => { if (activeDrag.current && event.dataTransfer.types.includes(mime)) { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; } }}
       onDrop={event => { const id = activeDrag.current; activeDrag.current = null; if (!id || event.dataTransfer.getData(mime) !== id || !flow.current) return; event.preventDefault(); add(id, event.clientX, event.clientY); }}>
-      <ReactFlow<FlowNode> nodes={nodes} edges={[]} nodeTypes={nodeTypes} nodeOrigin={origin} onNodesChange={changes} onInit={instance => { flow.current = instance; }} onMove={(_, viewport) => setView(viewport)} minZoom={0.25} maxZoom={2} defaultViewport={initial} nodesConnectable={false} elementsSelectable multiSelectionKeyCode={null} selectionKeyCode={null} deleteKeyCode={null} autoPanOnNodeDrag={false} autoPanOnNodeFocus={false} zoomOnScroll={false} zoomOnPinch={false} zoomOnDoubleClick={false} panOnScroll={false} onNodeDragStart={() => { draggingNode.current = true; }} onNodeDragStop={() => { draggingNode.current = false; }}>
+      <ReactFlow<FlowNode> nodes={nodes} edges={edges} onEdgesChange={edgeChanges} onConnect={commit} isValidConnection={valid} connectOnClick edgesReconnectable={false} autoPanOnConnect={false} onNodeClick={() => setEdges(previous => previous.map(edge => ({ ...edge, selected: false })))} onEdgeClick={() => setNodes(previous => previous.map(node => ({ ...node, selected: false })))} nodeTypes={nodeTypes} nodeOrigin={origin} onNodesChange={changes} onInit={instance => { flow.current = instance; }} onMove={(_, viewport) => setView(viewport)} minZoom={0.25} maxZoom={2} defaultViewport={initial} nodesConnectable elementsSelectable multiSelectionKeyCode={null} selectionKeyCode={null} deleteKeyCode={null} autoPanOnNodeDrag={false} autoPanOnNodeFocus={false} zoomOnScroll={false} zoomOnPinch={false} zoomOnDoubleClick={false} panOnScroll={false} onNodeDragStart={() => { draggingNode.current = true; }} onNodeDragStop={() => { draggingNode.current = false; }}>
         <Background variant={BackgroundVariant.Dots} gap={16} color="var(--border-default)" />
       </ReactFlow>
     </div>
-    <div className="diagram-notice">Temporary diagram — refreshing or leaving this project will discard nodes.</div>
+    <div className="diagram-notice">Temporary diagram — refreshing or leaving this project will discard nodes and connections.</div>
     <div className="component-toggle"><Button ref={toggle} onClick={() => libraryOpen ? closeLibrary() : setLibraryOpen(true)}>Components</Button></div>
     {libraryOpen && <Library className="component-panel" role="complementary" aria-label="Components" entries={componentCatalog}
       {...{ 'oncomponent-library-close': closeLibrary, 'oncomponent-library-activate': (event: CustomEvent<{ id: string }>) => { pending.current = event.detail.id; closeLibrary(); }, 'oncomponent-library-drag-start': (event: CustomEvent<{ id: string }>) => { activeDrag.current = event.detail.id; }, 'oncomponent-library-drag-end': () => { activeDrag.current = null; } }} />}
     <div className="project-canvas-controls" aria-label="Canvas controls">
-      {selected && <Button onClick={remove}>Delete selected node</Button>}
+      <Button ref={connectToggle} onClick={() => { setSource(selected?.id ?? ''); setConnectOpen(true); }}>Connect</Button>
+      {(selected || selectedEdge) && <Button onClick={remove}>Delete selected {selected ? 'node' : 'connection'}</Button>}
       <Button disabled={view.zoom <= 0.25} onClick={() => zoom(-0.1)}>Zoom out</Button><span aria-live="polite">{Math.round(view.zoom * 100)}%</span><Button disabled={view.zoom >= 2} onClick={() => zoom(0.1)}>Zoom in</Button><Button onClick={() => { if (!draggingNode.current) void flow.current?.setViewport(initial); }}>Reset</Button>
     </div>
+    {connectOpen && <div className="connect-panel" onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); closeConnect(); } }}>
+      <label>Source <select value={source} onChange={event => setSource(event.target.value)}><option value="">Select source</option>{nodes.map(node => <option key={node.id} value={node.id}>{componentCatalog.find(entry => entry.id === node.data.componentId)?.label} ({node.id})</option>)}</select></label>
+      <label>Target <select value={target} onChange={event => setTarget(event.target.value)}><option value="">Select target</option>{nodes.map(node => <option key={node.id} value={node.id}>{componentCatalog.find(entry => entry.id === node.data.componentId)?.label} ({node.id})</option>)}</select></label>
+      <Button disabled={!valid({ source, target, sourceHandle: 'out', targetHandle: 'in' })} onClick={() => { commit({ source, target, sourceHandle: 'out', targetHandle: 'in' }); closeConnect(); }}>Create connection</Button>
+      <Button onClick={closeConnect}>Cancel</Button>
+    </div>}
     {message && <div role="status" className="diagram-message">{message}</div>}
   </div>;
 }
