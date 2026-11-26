@@ -3,10 +3,10 @@
 Update this file when a feature changes status. Keep one concise entry per feature; record only actual results and outstanding checks.
 
 ## Current Phase
-- Feature 07A cloud integration verified; Feature 07 cross-account and Feature 06 security gates remain open.
+- Feature 09 implementation in progress; Feature 07 cross-account and Feature 06 security gates remain open.
 
 ## Current Goal
-- Preserve Feature 07 cross-account and Feature 06 pre-production gates.
+- Verify Feature 09 project switching and preserve Feature 08, Feature 07 and Feature 06 outstanding gates.
 
 ## Completed Implementation
 
@@ -19,6 +19,8 @@ Update this file when a feature changes status. Keep one concise entry per featu
 
 ## In Progress
 
+- Feature 09: Browse-only 12-component catalog and panel implemented. Focused tests, lint, TypeScript and webpack build passed; Nx Turbopack build hit the existing worker-port restriction. Local Docker Chrome verified search, clear, no-results, close focus, owned-project switching and reset, keyboard scrolling and tile/search interaction without canvas changes, unavailable UUID, and desktop/mobile fit. A narrow-screen sidebar overlap was fixed and rechecked. A disposable local project was created and deleted. Sign-out removed the panel and redirected to sign-in; switching between distinct identities and physical wheel/touch gesture isolation remain unverified.
+
 - Feature 08: Workspace routes, verified project title and temporary canvas implemented. Focused Next.js tests (19), shared-sections tests (8), TypeScript, both lints and webpack production build passed; default Turbopack build was blocked by port binding. Local Docker Chrome checks passed for create, rename, reload, history, unavailable UUID, active deletion, keyboard and mouse pan, wheel and button zoom, reset, and 1440px/390px layout; the disposable local project was removed. Signed-out routes redirected to sign-in. Desktop and mobile workspace screenshots were inspected. A synthetic pointer cancellation during a mouse drag released capture; a subsequent drag succeeded. Touch pan remains unverified: Chrome DevTools drag emits mouse events under touch emulation. Cross-account verification remains a pre-production gate: no second account was available. Feature 06/07 security gates remain open.
 
 - Feature 07: Authenticated Chrome checks passed for create, rename with stable UUID, reload persistence, duplicate validation, simulated load failure and retry, legacy preservation, and last-delete focus at 390px. Destructive-button contrast now passes at 5.41:1; delete-dialog Lighthouse accessibility is 100 at 390px and desktop. Simulated 400, 404, 409, 413, 500 and 503 responses and pending dismissal were checked. The editor now ends only the rejected Clerk session and blocks project state while sign-out is pending or fails; focused tests cover sign-out failure and stale 401 responses. Live 401 verification: an invalid token received API 401, ended the current Clerk session, and the protected editor redirected to a stable sign-in screen; after reauthentication the editor reopened and fetched the original projects with HTTP 200. Three test projects survived reload and were removed; at desktop and 390px the footer remained visible while a 30-row simulated list scrolled independently. Escape and deletion restored focus. Cross-account checks remain blocked. Existing focused tests, lint, TypeScript and webpack build passed; default Turbopack build remained blocked by sandbox port binding.
@@ -30,6 +32,8 @@ Update this file when a feature changes status. Keep one concise entry per featu
 - Feature 04: deletion focus passed regression tests and authenticated desktop/390px browser checks. Mobile dialog accessibility: Lighthouse 100, no failed audits; Escape restores focus and no horizontal overflow. Live account switching remains unverified: no second account visible in the current Clerk session.
 
 ## Next Up
+
+- Complete Feature 09 distinct-identity and physical wheel/touch gesture isolation verification when available.
 
 - Complete blocked cross-account verification when a second existing account is available. Finish Feature 06 security checks before production.
 - Feature 04: Local Project Management — `docs/context/feature-specs/04-local-project-management.md`.

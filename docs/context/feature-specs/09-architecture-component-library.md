@@ -1,6 +1,6 @@
 # Feature 09 - Architecture Component Library
 
-Status: Approved to start development; implementation and verification pending.
+Status: Implementation in progress; distinct-identity and physical wheel/touch gesture isolation verification pending.
 Prerequisite: Feature 08 approved for continued development, with outstanding verification gates retained.
 
 ## Objective

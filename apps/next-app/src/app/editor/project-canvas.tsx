@@ -1,13 +1,20 @@
 'use client';
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent, type DetailedHTMLProps, type HTMLAttributes } from 'react';
 import './project-canvas.css';
+import { componentCatalog } from './component-catalog';
+import type { ComponentEntry } from '@nx-learning/shared-sections';
 
 const Button = 'uic-button' as React.ElementType<DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> & { disabled?: boolean }>;
+
+const Library = 'sic-component-library' as React.ElementType<DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> & { entries: readonly ComponentEntry[]; 'oncomponent-library-close': () => void }>;
 
 type View = { x: number; y: number; zoom: number };
 const initial: View = { x: 0, y: 0, zoom: 100 };
 export default function ProjectCanvas() {
   const [view, setView] = useState(initial);
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const toggle = useRef<HTMLElement>(null);
+  const closeLibrary = () => { setLibraryOpen(false); toggle.current?.shadowRoot?.querySelector<HTMLButtonElement>('button')?.focus(); };
   const canvas = useRef<HTMLDivElement>(null);
   const drag = useRef<{ id: number; x: number; y: number } | null>(null);
   const zoomAt = (step: number, x: number, y: number) => setView(previous => {
@@ -57,6 +64,8 @@ export default function ProjectCanvas() {
         const move = moves[event.key];
         if (move) { event.preventDefault(); setView(previous => ({ ...previous, x: previous.x + move[0], y: previous.y + move[1] })); }
       }} />
+    <div className="component-toggle"><Button ref={toggle} onClick={() => libraryOpen ? closeLibrary() : setLibraryOpen(true)}>Components</Button></div>
+    {libraryOpen && <Library className="component-panel" role="complementary" aria-label="Components" entries={componentCatalog} oncomponent-library-close={closeLibrary} />}
     <div className="project-canvas-controls" aria-label="Canvas controls">
       <Button disabled={view.zoom <= 25} onClick={() => zoomCenter(-10)}>Zoom out</Button>
       <span aria-live="polite">{view.zoom}%</span>

@@ -46,6 +46,7 @@ Use Lit, not separate Angular/React UI implementations. UIC = reusable UI elemen
 | uic-input | label, placeholder, value, disabled | uic-change `{value}` |
 | uic-modal | heading, open, default/description/footer slots | uic-close |
 | uic-empty-state | heading, description, action slot | action provided by caller |
+| sic-component-library | readonly catalog entries | component-library-close |
 | sic-editor-navbar | sidebarOpen | sidebar-toggle |
 | sic-sidebar | isOpen, activeTab (`mine` or `shared`) | project-create, tab-change `{value}`, sidebar-close |
 Complex values use properties, not stringified attributes. Events are typed, bubble and are composed where crossing shadow boundaries is required. Do not emit both a native and a duplicate custom action for one click.

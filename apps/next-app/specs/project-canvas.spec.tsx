@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import ProjectCanvas from '../src/app/editor/project-canvas';
 
 it('zooms, clamps, pans by keyboard and resets the view', () => {
@@ -26,4 +26,15 @@ it('clamps zoom out at 25 percent', () => {
   for (let i = 0; i < 20; i++) fireEvent.click(screen.getByText('Zoom out'));
   expect(screen.getByText('25%')).toBeTruthy();
   expect(screen.getByText('Zoom out').hasAttribute('disabled')).toBe(true);
+});
+
+it('opens and closes the component library without resetting the canvas', () => {
+  render(<ProjectCanvas />);
+  const canvas = screen.getByLabelText('Project canvas');
+  fireEvent.keyDown(canvas, { key: 'ArrowRight' });
+  fireEvent.click(screen.getByText('Components'));
+  expect(document.querySelector('sic-component-library')).toBeTruthy();
+  act(() => { document.querySelector('sic-component-library')!.dispatchEvent(new CustomEvent('component-library-close', { bubbles: true })); });
+  expect(document.querySelector('sic-component-library')).toBeNull();
+  expect(canvas.style.getPropertyValue('--grid-x')).toBe('20px');
 });

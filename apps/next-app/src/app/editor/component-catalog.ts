@@ -1,0 +1,16 @@
+import type { ComponentEntry } from '@nx-learning/shared-sections';
+
+export const componentCatalog: readonly ComponentEntry[] = [
+  { id: 'aws-ec2', label: 'EC2', category: 'Compute', icon: 'server', aliases: ['amazon', 'aws', 'compute', 'virtual machine'] },
+  { id: 'aws-lambda', label: 'Lambda', category: 'Compute', icon: 'zap', aliases: ['aws', 'serverless', 'function', 'compute'] },
+  { id: 'aws-ecs', label: 'ECS', category: 'Compute', icon: 'container', aliases: ['amazon', 'aws', 'elastic container service', 'compute'] },
+  { id: 'postgresql', label: 'PostgreSQL', category: 'Database', icon: 'database', aliases: ['sql', 'relational', 'postgres'] },
+  { id: 'mongodb', label: 'MongoDB', category: 'Database', icon: 'database', aliases: ['nosql', 'document'] },
+  { id: 'aws-dynamodb', label: 'DynamoDB', category: 'Database', icon: 'table', aliases: ['amazon', 'aws', 'nosql', 'database'] },
+  { id: 'aws-api-gateway', label: 'API Gateway', category: 'Networking', icon: 'network', aliases: ['amazon', 'aws', 'networking', 'api'] },
+  { id: 'load-balancer', label: 'Load Balancer', category: 'Networking', icon: 'git-branch', aliases: ['networking', 'traffic', 'elb'] },
+  { id: 'aws-cloudfront', label: 'CloudFront', category: 'Networking', icon: 'globe', aliases: ['amazon', 'aws', 'cdn', 'networking'] },
+  { id: 'aws-s3', label: 'S3', category: 'Storage', icon: 'archive', aliases: ['amazon', 'aws', 'object', 'bucket', 'storage'] },
+  { id: 'frontend', label: 'Frontend', category: 'Applications', icon: 'monitor', aliases: ['client', 'web', 'browser', 'ui', 'application'] },
+  { id: 'backend', label: 'Backend', category: 'Applications', icon: 'server', aliases: ['server', 'api', 'application'] },
+];

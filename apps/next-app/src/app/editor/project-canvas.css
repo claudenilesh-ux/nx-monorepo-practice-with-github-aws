@@ -1,4 +1,4 @@
-.project-canvas-wrap { position: absolute; inset: 0; z-index: 0; }
+.project-canvas-wrap { position: absolute; inset: 0; }
 .project-canvas {
   position: absolute; inset: 0; touch-action: none; cursor: grab;
   background-image: radial-gradient(circle, var(--border-default) calc(1px * var(--grid-scale)), transparent calc(1px * var(--grid-scale)));
@@ -11,3 +11,5 @@
 @media (max-width: 767px) {
   .project-canvas-controls { flex-direction: column; }
 }
+.component-toggle { position: absolute; top: var(--space-4); right: var(--space-4); }
+.component-panel { position: absolute; z-index: 2; top: 0; right: 0; bottom: 0; width: min(100%, calc(var(--sidebar-width) + var(--space-8))); }
