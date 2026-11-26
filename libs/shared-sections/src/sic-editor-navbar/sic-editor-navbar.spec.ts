@@ -29,3 +29,14 @@ it('forwards right-slot content to the navigation control', async () => {
   expect(slot?.getAttribute('slot')).toBe('right');
   navbar.remove();
 });
+
+it('forwards the optional center slot', async () => {
+  const navbar = document.createElement('sic-editor-navbar') as SicEditorNavbar;
+  const title = document.createElement('span');
+  title.slot = 'center';
+  navbar.append(title);
+  document.body.append(navbar);
+  await navbar.updateComplete;
+  expect(navbar.shadowRoot?.querySelector<HTMLSlotElement>('slot[name="center"]')?.assignedElements()).toContain(title);
+  navbar.remove();
+});

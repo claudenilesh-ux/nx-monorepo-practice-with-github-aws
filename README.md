@@ -8,15 +8,25 @@
 
 ## Run Archloom locally
 
-Start Docker Desktop and configure the existing app-local settings, then run from the workspace root:
+Configure the existing app-local settings, then run from the workspace root:
 
 ```sh
 npm run dev:archloom
 ```
 
-The command waits for local PostgreSQL to become healthy, then starts the Next.js editor at http://localhost:3000/editor and Express at http://localhost:3001. Press Ctrl+C to stop both application processes. PostgreSQL remains running and its data volume is preserved.
+The command uses Prisma Postgres, then starts the Next.js editor at http://localhost:3000/editor and Express at http://localhost:3001. Press Ctrl+C to stop both application processes. For local PostgreSQL, start Docker Desktop and run `npm run dev:archloom -- --local`; it waits for database health and preserves the volume on shutdown.
 
-To use an already configured external PostgreSQL service, set `ARCHLOOM_SKIP_LOCAL_DATABASE=1` when running the command. Ensure the existing Express database configuration points to that service; the command does not provision it.
+To skip Compose for an already running local PostgreSQL instance, set `ARCHLOOM_SKIP_LOCAL_DATABASE=1` when running the command. For Prisma Postgres, use the cloud mode below.
+
+### Prisma Postgres cloud preparation
+
+Use the existing Prisma Postgres Free-plan development database. In the ignored Express cloud profile, the developer privately sets `DATABASE_URL` to the pooled TCP URL and `DIRECT_URL` to the matching direct TCP URL from Prisma Console, both with `sslmode=require`. Do not share or commit those values. Process variables take precedence; the loader then reads the cloud profile before the existing local profile. Check for stale inherited database variables before selecting cloud. Keep database values out of frontend configuration.
+
+Select cloud with `npm run dev:archloom -- --cloud`; it skips Compose. Use `npm run dev:archloom -- --local` for local PostgreSQL. Prisma CLI commands select cloud using `ARCHLOOM_DATABASE_PROFILE=cloud`; runtime uses the pooled endpoint and CLI/Studio the direct endpoint. See [Prisma connection guidance](https://www.prisma.io/docs/postgres/database/connecting-to-your-database).
+
+The current cloud database contains the approved restored records and migration history. Check migrations with `ARCHLOOM_DATABASE_PROFILE=cloud npx prisma migrate status`; use `migrate deploy` only for approved pending migrations. Preserve the local volume and never reset either database. Roll back with `--local`; cloud-only writes are not synchronized back.
+
+Integration tests require an explicitly supplied loopback `DATABASE_URL` for the separate `archloom_test` database, `ARCHLOOM_DATABASE_PROFILE=test`, and `RUN_DATABASE_TESTS=1`; unset `DIRECT_URL`. Create and migrate the isolated database separately before running Express tests. The guard rejects cloud, non-test and inherited direct URLs before database access.
 
 ## Run tasks
 
@@ -186,3 +196,9 @@ If Next.js does not have a project.json but has its own package.json, add this i
 }
 
 npm run dev:archloom
+
+Start with cloud database npm run dev:archloom
+Start with local Docker database npm run dev:archloom -- --local
+Explicitly start cloud mode npm run dev:archloom -- --cloud
+
+npx prisma studio

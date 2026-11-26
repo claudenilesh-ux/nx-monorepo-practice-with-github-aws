@@ -4,3 +4,4 @@ export * from './sic-editor-navbar/sic-editor-navbar';
 export * from './sic-sidebar/sic-sidebar';
 
 export * from "./sic-project-dialog/sic-project-dialog";
+export * from './sic-component-library/sic-component-library';

@@ -1,5 +1,7 @@
 # Architecture Context
 
+Feature 07A: Express uses a Prisma Postgres pooled runtime connection and matching direct CLI connection through a separate developer-managed cloud profile. Cloud is the default development startup; `--local` retains Docker PostgreSQL. Integration tests require an isolated loopback test database. Cloud and local data do not synchronize automatically.
+
 ## Boundaries
 
 - `apps/next-app/` is the only active Architecture Studio frontend. It owns browser registration, Clerk integration, editor state and persistence orchestration.
@@ -15,6 +17,10 @@ Versioned browser localStorage remains preserved per Clerk user. Feature 07 read
 ## Integration and verification
 
 Register Lit in the browser before binding complex properties in Next.js. Use public library entry points. Verify product changes in Next.js at `http://localhost:3000/editor`; run relevant shared-library tests when shared components change. Keep Clerk route protection intact.
+
+## Feature 10 canvas
+
+The authorized Next.js workspace owns temporary React Flow nodes and viewport state. The Lit catalog emits component activation and drag intents; no diagram data is persisted or sent to the project API. Workspace identity and project changes remount the canvas. Browser acceptance remains in progress.
 
 ## Feature 05 local database
 

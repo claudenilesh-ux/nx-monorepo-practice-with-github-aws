@@ -1,5 +1,5 @@
 import { requiredValue } from '@nx-learning/config';
-import { loadExpressLocal } from '../config/load-local';
+import { loadExpressLocal, validateDatabaseTarget } from '../config/load-local';
 
 loadExpressLocal();
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -10,6 +10,7 @@ let client: PrismaClient | undefined;
 export function getPrisma(): PrismaClient {
   if (!client) {
     const connectionString = requiredValue('DATABASE_URL', process.env.DATABASE_URL);
+    validateDatabaseTarget(process.env.RUN_DATABASE_TESTS === '1' ? 'test' : process.env.ARCHLOOM_DATABASE_PROFILE || 'local', connectionString, process.env.DIRECT_URL);
     client = new PrismaClient({
       adapter: new PrismaPg({ connectionString, max: 5, connectionTimeoutMillis: 5000 }),
     });

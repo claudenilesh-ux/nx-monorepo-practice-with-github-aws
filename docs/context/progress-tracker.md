@@ -3,10 +3,10 @@
 Update this file when a feature changes status. Keep one concise entry per feature; record only actual results and outstanding checks.
 
 ## Current Phase
-- Feature 07 — implementation in progress and live verification pending; Feature 06 security gates remain open.
+- Feature 09 implementation in progress; Feature 07 cross-account and Feature 06 security gates remain open.
 
 ## Current Goal
-- Verify Feature 07 against the local frontend, API and PostgreSQL; preserve Feature 06 pre-production gates.
+- Verify Feature 09 project switching and preserve Feature 08, Feature 07 and Feature 06 outstanding gates.
 
 ## Completed Implementation
 
@@ -14,11 +14,18 @@ Update this file when a feature changes status. Keep one concise entry per featu
 - Feature 01: Design System — Shared SCSS tokens, Lit UICs and Lucide icons implemented. Shadow DOM icon rendering and accessible tabs corrected. Focused tests, lint, type checks and browser checks passed.
 - Feature 02: Editor Layout — Shared editor navbar, floating project sidebar, tabs, empty states and reusable dialog pattern implemented in both apps. Responsive layout, sidebar controls and unchanged canvas bounds verified.
 - Feature 05: PostgreSQL 17 and Prisma 7 local database foundation, initial migration and reusable Express client implemented and verified.
+- Feature 07A: Free-plan Prisma Postgres cloud startup verified; restored records matched local source, migration status was current, and authenticated create/reload/rename/delete smoke passed. Local Docker mode and isolated test guard remain available; cloud and local writes do not synchronize.
 - Feature 03: Clerk Authentication — Clerk integrated with protected editor routes and native account UI. Next.js Clerk URLs are configured locally; sign-in and sign-up force redirects to the editor, and sign-out uses the configured destination. Next.js sign-in/sign-up screens use Archloom branding, the supplied split-screen visual reference and existing design tokens; sign-in copy matches the mock and responsive form layout was checked. Developer reports sign-in and sign-out working; remaining acceptance checks are listed below.
 
 ## In Progress
 
-- Feature 07: Authenticated Chrome checks passed for create, rename with stable UUID, reload persistence, duplicate validation, simulated load failure and retry, legacy preservation, and last-delete focus at 390px. Destructive-button contrast now passes at 5.41:1; delete-dialog Lighthouse accessibility is 100 at 390px and desktop. Simulated 400, 404, 409, 413, 500 and 503 responses and pending dismissal were checked. The editor now ends only the rejected Clerk session and blocks project state while sign-out is pending or fails; focused tests cover sign-out failure and stale 401 responses. Live 401 verification is blocked by browser approval availability. Sidebar footer sizing was hardened, but the original disappearance was not reproduced and post-change browser layout checks remain blocked. Cross-account checks remain blocked. Existing focused tests, lint, TypeScript and webpack build passed; default Turbopack build remained blocked by sandbox port binding.
+- Feature 10: React Flow 13.0.3 (MIT) replaces the custom canvas engine, with temporary catalog nodes and Lit activation/drag events. TypeScript, Next.js lint, mocked canvas tests (5), and webpack build passed after fixing stale drops when the library closes mid-drag. Earlier editor tests (16), library tests (3), and shared-sections lint passed. Default Turbopack remains blocked by the known worker-port restriction. The running API connected to local Docker PostgreSQL at loopback port 5432. Chrome verified panned drop centers within 0.13 CSS pixels at 25%, 100%, and 200%, distinct IDs, external drag release and recovery, search-field deletion guards, synthetic invalid drops, and reset preserving node positions. Earlier checks covered keyboard node movement/deletion, reload, project switch, and sign-out. At 390px emulated viewport, click-add and visible delete worked without overflow; physical touch remains unverified. Node drag movement scaling and interrupted node movement remain open: the browser drag tool did not move the node. Cross-account and token-security gates remain open; the existing monitoring-extension discrepancy remains unexplained.
+
+- Feature 09: Browse-only 12-component catalog and panel implemented. Focused tests, lint, TypeScript and webpack build passed; Nx Turbopack build hit the existing worker-port restriction. Local Docker Chrome verified search, clear, no-results, close focus, owned-project switching and reset, keyboard scrolling and tile/search interaction without canvas changes, unavailable UUID, and desktop/mobile fit. A narrow-screen sidebar overlap was fixed and rechecked. A disposable local project was created and deleted. Sign-out removed the panel and redirected to sign-in; switching between distinct identities and physical wheel/touch gesture isolation remain unverified.
+
+- Feature 08: Workspace routes, verified project title and temporary canvas implemented. Focused Next.js tests (19), shared-sections tests (8), TypeScript, both lints and webpack production build passed; default Turbopack build was blocked by port binding. Local Docker Chrome checks passed for create, rename, reload, history, unavailable UUID, active deletion, keyboard and mouse pan, wheel and button zoom, reset, and 1440px/390px layout; the disposable local project was removed. Signed-out routes redirected to sign-in. Desktop and mobile workspace screenshots were inspected. A synthetic pointer cancellation during a mouse drag released capture; a subsequent drag succeeded. Touch pan remains unverified: Chrome DevTools drag emits mouse events under touch emulation. Cross-account verification remains a pre-production gate: no second account was available. Feature 06/07 security gates remain open.
+
+- Feature 07: Authenticated Chrome checks passed for create, rename with stable UUID, reload persistence, duplicate validation, simulated load failure and retry, legacy preservation, and last-delete focus at 390px. Destructive-button contrast now passes at 5.41:1; delete-dialog Lighthouse accessibility is 100 at 390px and desktop. Simulated 400, 404, 409, 413, 500 and 503 responses and pending dismissal were checked. The editor now ends only the rejected Clerk session and blocks project state while sign-out is pending or fails; focused tests cover sign-out failure and stale 401 responses. Live 401 verification: an invalid token received API 401, ended the current Clerk session, and the protected editor redirected to a stable sign-in screen; after reauthentication the editor reopened and fetched the original projects with HTTP 200. Three test projects survived reload and were removed; at desktop and 390px the footer remained visible while a 30-row simulated list scrolled independently. Escape and deletion restored focus. Cross-account checks remain blocked. Existing focused tests, lint, TypeScript and webpack build passed; default Turbopack build remained blocked by sandbox port binding.
 
 - Feature 06: Implemented — automated tests and available live API verification passed. Remaining live security checks blocked by unavailable fixtures. Mandatory before production: verify wrong-instance token rejection, non-session token rejection, untrusted authorized-party rejection, and cross-account isolation.
 
@@ -28,7 +35,9 @@ Update this file when a feature changes status. Keep one concise entry per featu
 
 ## Next Up
 
-- Complete Feature 07 sidebar and 401 browser verification and remove the feature-owned Sidebar Probe One project. Finish Feature 06 security checks before production.
+- Complete Feature 09 distinct-identity and physical wheel/touch gesture isolation verification when available.
+
+- Complete blocked cross-account verification when a second existing account is available. Finish Feature 06 security checks before production.
 - Feature 04: Local Project Management — `docs/context/feature-specs/04-local-project-management.md`.
 - Future: Express API authentication, project ownership and frontend integration (separate specs).
 
@@ -55,6 +64,7 @@ Update this file when a feature changes status. Keep one concise entry per featu
 
 ## Open Questions
 
+- Feature 07A: Previously observed monitoring-extension catalog mismatch remains unexplained; no extension was intentionally modified.
 - No unresolved Feature 04 requirements recorded; confirm any new decisions against the approved spec.
 - Complete the remaining Clerk acceptance checks before treating authentication as fully verified.
 
