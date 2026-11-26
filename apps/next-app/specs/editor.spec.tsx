@@ -201,3 +201,4 @@ it('navigates to the selected project and replaces the route after deleting it',
   act(() => dialog.dispatchEvent(new CustomEvent('project-submit')));
   await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/editor'));
 });
+jest.mock('../src/app/editor/project-canvas', () => ({ __esModule: true, default: () => <div aria-label="Project canvas" /> }));

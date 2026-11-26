@@ -17,12 +17,14 @@ export class SicComponentLibrary extends LitElement {
     h3 { color: var(--text-muted); margin-bottom: var(--space-2); }
     .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
     uic-card { display: flex; min-width: 0; }
-    .tile { display: flex; align-items: center; gap: var(--space-2); overflow-wrap: anywhere; }
+    .tile { display: flex; width: 100%; align-items: center; gap: var(--space-2); overflow-wrap: anywhere; color: inherit; background: transparent; border: 0; font: inherit; cursor: grab; }
+    .tile:focus-visible { outline: var(--focus-width) solid var(--focus-ring); }
     uic-icon { flex: none; color: var(--accent-primary); }
     uic-empty-state { padding: var(--space-4); }
   `;
   declare entries: readonly ComponentEntry[];
   private declare query: string;
+  private dragged = false;
   constructor() { super(); this.entries = []; this.query = ''; }
   protected override render() {
     const query = this.query.trim().toLowerCase();
@@ -33,7 +35,7 @@ export class SicComponentLibrary extends LitElement {
       <div class="search"><uic-input label="Search components" placeholder="Search components" .value=${this.query} @uic-change=${(event: CustomEvent<{ value: string }>) => { this.query = event.detail.value; }}></uic-input>
         ${this.query ? html`<uic-button class="clear" data-clear @click=${() => { this.query = ''; }}>Clear search</uic-button>` : ''}</div>
       <uic-scroll-area tabindex="0" aria-label="Component catalog">
-        ${categories.length ? categories.map(category => html`<section><h3>${category}</h3><div class="tiles">${matches.filter(entry => entry.category === category).map(entry => html`<uic-card><div class="tile"><uic-icon .name=${entry.icon}></uic-icon><span>${entry.label}</span></div></uic-card>`)}</div></section>`) : html`<uic-empty-state heading="No components found" description="Try a different search term."></uic-empty-state>`}
+        ${categories.length ? categories.map(category => html`<section><h3>${category}</h3><div class="tiles">${matches.filter(entry => entry.category === category).map(entry => html`<uic-card><button type="button" class="tile" draggable="true" @pointerdown=${() => { this.dragged = false; }} @keydown=${() => { this.dragged = false; }} @click=${() => { if (!this.dragged) this.dispatchEvent(new CustomEvent('component-library-activate', { detail: { id: entry.id }, bubbles: true, composed: true })); }} @dragstart=${(event: DragEvent) => { this.dragged = true; event.dataTransfer?.setData('application/x-archloom-component', entry.id); this.dispatchEvent(new CustomEvent('component-library-drag-start', { detail: { id: entry.id }, bubbles: true, composed: true })); }} @dragend=${() => this.dispatchEvent(new CustomEvent('component-library-drag-end', { bubbles: true, composed: true }))}><uic-icon .name=${entry.icon}></uic-icon><span>${entry.label}</span></button></uic-card>`)}</div></section>`) : html`<uic-empty-state heading="No components found" description="Try a different search term."></uic-empty-state>`}
       </uic-scroll-area>`;
   }
 }

@@ -18,6 +18,10 @@ Versioned browser localStorage remains preserved per Clerk user. Feature 07 read
 
 Register Lit in the browser before binding complex properties in Next.js. Use public library entry points. Verify product changes in Next.js at `http://localhost:3000/editor`; run relevant shared-library tests when shared components change. Keep Clerk route protection intact.
 
+## Feature 10 canvas
+
+The authorized Next.js workspace owns temporary React Flow nodes and viewport state. The Lit catalog emits component activation and drag intents; no diagram data is persisted or sent to the project API. Workspace identity and project changes remount the canvas. Browser acceptance remains in progress.
+
 ## Feature 05 local database
 
 Express owns a Prisma 7 client backed by PostgreSQL 17. Projects and collaborators have owner-scoped slug and project/user uniqueness; no project API or frontend database access exists. Feature 04 remains browser-local.

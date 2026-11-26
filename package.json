@@ -83,6 +83,7 @@
     "@clerk/ui": "^1.45.0",
     "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "7.10.0",
+    "@xyflow/react": "^13.0.3",
     "axios": "^1.6.0",
     "dotenv": "18.0.10",
     "express": "^5.1.0",
